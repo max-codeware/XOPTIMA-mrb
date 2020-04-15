@@ -1,0 +1,71 @@
+#! /usr/bin/env ruby
+
+template = <<T
+require "SymDesc"
+require "XOPTIMA-mrb"
+
+include XOPTIMA
+
+# Set to `:local' for customized behaviour
+SYM_CONFIG[:var_scope] = :global 
+
+# Symbolic variables used
+x, y, z = var :x, :y, :z
+
+problem = Problem.new("%s")
+
+# Set to `true' to display the states of the problem description
+problem.verbose = false
+
+# Problem equations
+eqs = []
+# eqs << ...
+
+
+# State variables
+state_vars = []
+
+# Controls
+cvars = []
+
+# Optimization parameters
+opars = []
+
+# Dynamic system loading
+problem.loadDynamicSystem(equations: eqs, states: state_vars, controls: cvars)
+
+# Boundary conditions
+problem.addBoundaryConditions(...)
+
+# Constraints on control
+problem.addControlBound(...)
+
+# Cost function: target
+problem.setTarget(lagrange: ..., mayer: ...)
+
+#Problem generation
+problem.generateOCProblem(
+  clean: false,
+  ...
+)
+T
+
+def __local_raise(msg = nil)
+  STDERR << msg << "\n\n" if msg
+  STDERR << "Usage: XOPTIMAmrb init problem_name\n\nproblem_name: name of the problem described\n"
+  exit 1
+end
+
+case ARGV[0]
+when "init"
+  name = ARGV[1]
+  if name.nil?
+    __local_raise("No project name given")
+  end
+
+  File.open("#{name}.rb", "w+") do |f|
+    f.puts template % name
+  end
+else
+  __local_raise
+end
