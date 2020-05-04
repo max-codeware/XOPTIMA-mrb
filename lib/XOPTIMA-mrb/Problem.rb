@@ -108,14 +108,25 @@ module XOPTIMA
       @control_bounds << cb
     end
 
-    def setTarget(lagrange = 0, mayer = 0)
+    def setTarget(lagrange: 0, mayer: 0)
+      @lagrange = lagrange
+      @mayer    = mayer
     end
 
-    def generateOCProblem()
+    def generateOCProblem(*arg, **argk)
       raise DescriprionError, "Dynamic system not loaded for problem #{@name}" unless @loaded
+      if @verbose
+        __display_loaded_problem
+      end
+      
+      h = __h_term
+      puts "", "H: #{h}"
+      
+      b = __b_term
+      puts "B: #{b}"
     end
 
-  private:
+  private
 
     # This class represents an interval constraint on given control: 
     # `-min <= u <= +max`.
@@ -144,6 +155,19 @@ module XOPTIMA
         end 
         false
       end
+
+      def to_s
+        [
+          "control: #{@control}",
+          "  type:    #{@controlType}",
+          "  label:   #{@label}",
+          "  epsilon: #{@epsilon}",
+          "  max:     #{@max}",
+          "  maxabs:  #{@maxabs}",
+          "  min:     #{@min}",
+          "  scale:   #{@scale}"
+        ].join "\n"
+      end
     end
 
     def __display_bc(lst, type)
@@ -151,5 +175,61 @@ module XOPTIMA
         puts "#{type}_#{v} : Enabled"
       end
     end
+
+    def __display_loaded_problem 
+      puts [
+        "==========================<Problem>==========================",
+        "rhs:             #{@rhs}",
+        "states:          #{@states}",
+        "dependentStates: #{@controls}",
+        "meshFunctions:   #{@meshFunctions}",
+        "independent:     #{@independent}",
+        "mass_matrix:\n[#{@mass_matrix.map(&:to_s).join(",\n")}]",
+        "====================<Boundary Conditions>====================",
+        "generic: #{@generic}",
+        "initial: #{@initial}",
+        "final:   #{@final}",
+        "cyclic:  #{@cyclic}",
+        "=======================<Control Bound>======================="
+      ].join "\n"
+      @control_bounds.each { |cb| puts cb}
+    end
+
+    def __id_matrix(size)
+      id = Array.new(size) do |i|
+        row = Array.new(size) { |j| i == j ? 1 : 0 }
+      end
+    end
+
+    def __h_term 
+      h = 0
+      @rhs.each_with_index { |f, i| h += var(:"lambda#{i+1}") * f }
+      return h + @lagrange
+    end
+
+    def __b_term
+      b = 0
+      i = 1
+      @final.each do |bj, vj| 
+        b += (bj[var(:"#{@independent}_f")] - vj) * var(:"omega#{i}")
+        i += 1
+      end
+
+      @initial.each do |bj, vj| 
+        b += (bj[var(:"#{@independent}_i")] - vj) * var(:"omega#{i}")
+        i += 1
+      end
+
+      @cyclic.each do |bj, vj| 
+        b += (bj[var(:"#{@independent}_c")] - vj) * var(:"omega#{i}")
+        i += 1
+      end
+
+      @generic.each do |bj, vj| 
+        b += (bj[var(:"#{@independent}_g")] - vj) * var(:"omega#{i}")
+        i += 1
+      end
+      return b + @mayer
+    end 
   end
 end
