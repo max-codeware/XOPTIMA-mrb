@@ -29,12 +29,12 @@ module XOPTIMA
 
     attr_accessor :verbose
 
-    def init(name)
-      @name = name
-      @loaded = false
+    def initialize(name)
+      @name    = name
+      @loaded  = false
       @verbose = false
 
-      # Boundaru conditions
+      # Boundary conditions
       @generic = {}
       @initial = {} 
       @final   = {}
@@ -42,19 +42,27 @@ module XOPTIMA
 
       # Control bound
       @control_bounds = []
+
+      # Target
+      @lagrange = 0
+      @mayer    = 0
     end
 
-    def loadDynamicSystem(equations:       [], 
+    def loadDynamicSystem(rhs:             [], 
                           states:          [], 
                           controls:        [], 
                           dependentStates: [],
-                          meshFunctions:   [])
+                          meshFunctions:   [],
+                          independent:     var(:t),
+                          mass_matrix:     nil)
       @loaded          = true
-      @equations       = equations
+      @rhs             = rhs
       @states          = states 
       @controls        = controls 
       @dependentStates = dependentStates
       @meshFunctions   = meshFunctions
+      @independent     = independent
+      @mass_matrix     = mass_matrix || __id_matrix(states.size)
     end
 
     # Set the initial, final, cyclic or generic boundary conditions.
