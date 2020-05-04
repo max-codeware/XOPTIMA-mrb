@@ -97,7 +97,6 @@ module XOPTIMA
                         label:       nil, 
                         epsilon:     1e-2,
                         max:         +1,
-                        maxabs:      +1,
                         min:         -1,
                         scale:       +1)
 
@@ -138,7 +137,7 @@ module XOPTIMA
 
       attr_reader :control, :controlType, :label, :epsilon, :max, :maxabs, :min, :scale
       
-      def initialize(control, controlType, label, epsilon, max, maxabs, min, scale)
+      def initialize(control, controlType, label, epsilon, max, min, scale)
         @control     = control
         @controlType = controlType
         @label       = label
@@ -163,7 +162,6 @@ module XOPTIMA
           "  label:   #{@label}",
           "  epsilon: #{@epsilon}",
           "  max:     #{@max}",
-          "  maxabs:  #{@maxabs}",
           "  min:     #{@min}",
           "  scale:   #{@scale}"
         ].join "\n"
@@ -206,7 +204,7 @@ module XOPTIMA
 
     def __h_term 
       h = 0
-      @rhs.each_with_index { |f, i| h += var(:"lambda#{i+1}") * f }
+      @rhs.each_with_index { |f, i| h += var(:"lambda#{i+1}")[@independent] * f }
       return h + @lagrange
     end
 
@@ -232,7 +230,9 @@ module XOPTIMA
         b += (bj[var(:"#{@independent}_g")] - vj) * var(:"omega#{i}")
         i += 1
       end
-      return b + @mayer
+      dict  ={@independent => var(:"#{@independent}_f")}
+      mayer = @mayer.subs( dict ) if @mayer != 0
+      return b + (mayer || @mayer)
     end 
   end
 end
