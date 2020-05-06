@@ -1,11 +1,10 @@
 require "SymDesc"
 require_relative "../lib/XOPTIMA-mrb.rb"
 
-include SymDesc
 include XOPTIMA
 
 # Set to `:local' for customized behaviour
-SYM_CONFIG[:var_scope] = :global 
+SymDesc::SYM_CONFIG[:var_scope] = :global 
 
 # Symbolic variables used
 x, v, t, f, zeta = var :x, :v, :t, :F, :zeta
@@ -21,7 +20,7 @@ rhs << v[t]
 rhs << f[t]
 
 # Mass matrix 
-# mass_matrix =  [...]
+# mass_matrix =  Matrix[[...], ...]
 
 
 # State variables
@@ -40,7 +39,7 @@ problem.loadDynamicSystem(rhs: rhs, states: state_vars, controls: cvars, indepen
 problem.addBoundaryConditions(initial: {x => 0, v => 0}, final: {v => 0})
 
 # Constraints on control
-problem.addControlBound(f, controlType: "U_COS_LOGARITHMIC", maxabs: 1)
+problem.addControlBound(f, controlType: "U_COS_LOGARITHMIC", max: 1, min: -1)
 
 # Cost function: target
 problem.setTarget(mayer: -x[t])
