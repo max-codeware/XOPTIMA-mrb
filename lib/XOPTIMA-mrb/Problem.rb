@@ -195,43 +195,6 @@ module XOPTIMA
       @control_bounds.each { |cb| puts cb}
     end
 
-    def __id_matrix(size)
-      id = Array.new(size) do |i|
-        row = Array.new(size) { |j| i == j ? 1 : 0 }
-      end
-    end
-
-    def __h_term 
-      h = 0
-      @rhs.each_with_index { |f, i| h += var(:"lambda#{i+1}")[@independent] * f }
-      return h + @lagrange
-    end
-
-    def __b_term
-      b = 0
-      i = 1
-      @final.each do |bj, vj| 
-        b += (bj[var(:"#{@independent}_f")] - vj) * var(:"omega#{i}")
-        i += 1
-      end
-
-      @initial.each do |bj, vj| 
-        b += (bj[var(:"#{@independent}_i")] - vj) * var(:"omega#{i}")
-        i += 1
-      end
-
-      @cyclic.each do |bj, vj| 
-        b += (bj[var(:"#{@independent}_c")] - vj) * var(:"omega#{i}")
-        i += 1
-      end
-
-      @generic.each do |bj, vj| 
-        b += (bj[var(:"#{@independent}_g")] - vj) * var(:"omega#{i}")
-        i += 1
-      end
-      dict  ={@independent => var(:"#{@independent}_f")}
-      mayer = @mayer.subs( dict ) if @mayer != 0
-      return b + (mayer || @mayer)
-    end 
+    
   end
 end

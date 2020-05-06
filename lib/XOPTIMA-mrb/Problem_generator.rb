@@ -25,20 +25,76 @@
 
 module XOPTIMA
   class Problem
-    def generate_problem_files
-      generate_header
-      generate_cc
+
+
+
+  private 
+
+    def __ni
+      return @mass_matrix * diff(@states, @independent)
     end
 
-    def generate_header
-      File.open("#{@name}.hh") do |io|
-        io << "#ifndef #{}"
-      end
+    def __mu
+      return @mass_matrix.transpose * @lambdas
     end
 
-    def generate_cc
-      File.open("#{@name}.cc") do |io|
+    def __h_term 
+      h = 0
+      @lambdas = []
+      @rhs.each_with_index do |f, i| 
+        lambda_i = var(:"lambda#{i+1}")[@independent]
+        @lambdas << lambda_i
+        h += lambda_i* f
       end
+      return h + @lagrange
     end
+
+    def __b_term
+      b = 0
+      i = 1
+      @final.each do |bj, vj| 
+        b += (bj[var(:"#{@independent}_f")] - vj) * var(:"omega#{i}")
+        i += 1
+      end
+
+      @initial.each do |bj, vj| 
+        b += (bj[var(:"#{@independent}_i")] - vj) * var(:"omega#{i}")
+        i += 1
+      end
+
+      @cyclic.each do |bj, vj| 
+        b += (bj[var(:"#{@independent}_i")] - vj[var(:"#{@independent}_f")]) * var(:"omega#{i}")
+        i += 1
+      end
+
+      @generic.each do |bj, vj| 
+        b += (bj[var(:"#{@independent}_i")] - vj) * var(:"omega#{i}")
+        i += 1
+      end
+      dict  ={ @independent => var(:"#{@independent}_f") }
+      mayer = @mayer.subs( dict ) if @mayer != 0
+      return b + (mayer || @mayer)
+    end 
+
+    def __df_dx 
+      __jacobian(@rhs, @states)
+    end
+
+    def __df_du
+    end
+
+    def __df_dp
+    end
+
+    def __jacobian(v, q)
+      m = Array.new(v.size) do |i|
+        v_i = v[i]
+        Array.new(q.size) do |j|
+          diff(v_i, q[j])
+        end
+      end
+      Matrix.new(m)
+    end
+
   end
 end
