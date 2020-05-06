@@ -123,6 +123,12 @@ module XOPTIMA
       
       b = __b_term
       puts "B: #{b}"
+
+      ni = __ni 
+      mu = __mu 
+      puts "ni: #{ni}"
+      puts "mu: #{mu}"
+      puts "df/dx: #{__df_dx}"
     end
 
   private
