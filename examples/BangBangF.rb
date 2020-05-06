@@ -9,7 +9,7 @@ SymDesc::SYM_CONFIG[:var_scope] = :global
 # Symbolic variables used
 x, v, t, f, zeta = var :x, :v, :t, :F, :zeta
 
-problem = Problem.new("BangBangF")
+problem = OCProblem.new("BangBangF")
 
 # Set to `true' to display the states of the problem description
 problem.verbose = true
@@ -42,7 +42,7 @@ problem.addBoundaryConditions(initial: {x => 0, v => 0}, final: {v => 0})
 problem.addControlBound(f, controlType: "U_COS_LOGARITHMIC", max: 1, min: -1)
 
 # Cost function: target
-problem.setTarget(mayer: -x[t])
+problem.setTarget(mayer: -x[t_f])
 
 #Problem generation
 problem.generateOCProblem(

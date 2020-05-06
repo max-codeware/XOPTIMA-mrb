@@ -12,7 +12,7 @@ SymDesc::SYM_CONFIG[:var_scope] = :global
 # Symbolic variables used
 x, y, z = var :x, :y, :z
 
-problem = Problem.new("%s")
+problem = OCProblem.new("%s")
 
 # Set to `true' to display the states of the problem description
 problem.verbose = false

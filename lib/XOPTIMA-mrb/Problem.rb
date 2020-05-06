@@ -24,7 +24,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 module XOPTIMA
-  class Problem
+  class OCProblem
     class DescriprionError < StandardError; end
 
     attr_accessor :verbose
