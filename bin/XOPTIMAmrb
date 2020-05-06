@@ -7,7 +7,7 @@ require "XOPTIMA-mrb"
 include XOPTIMA
 
 # Set to `:local' for customized behaviour
-SYM_CONFIG[:var_scope] = :global 
+SymDesc::SYM_CONFIG[:var_scope] = :global 
 
 # Symbolic variables used
 x, y, z = var :x, :y, :z
@@ -18,9 +18,11 @@ problem = Problem.new("%s")
 problem.verbose = false
 
 # Problem equations
-eqs = []
-# eqs << ...
+rhs = []
+# rhs << ...
 
+# Mass matrix 
+# mass_matrix =  Matrix[[...], ...]
 
 # State variables
 state_vars = []
@@ -32,7 +34,7 @@ cvars = []
 opars = []
 
 # Dynamic system loading
-problem.loadDynamicSystem(equations: eqs, states: state_vars, controls: cvars)
+problem.loadDynamicSystem(rhs: rhs, states: state_vars, controls: cvars, independent: ...)
 
 # Boundary conditions
 problem.addBoundaryConditions(...)
