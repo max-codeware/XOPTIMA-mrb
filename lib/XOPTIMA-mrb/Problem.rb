@@ -54,6 +54,8 @@ module XOPTIMA
                           dependentStates: [],
                           meshFunctions:   [],
                           independent:     var(:t),
+                          left:            nil, 
+                          right:           nil,
                           mass_matrix:     nil)
       @loaded          = true
       @rhs             = rhs
@@ -62,6 +64,8 @@ module XOPTIMA
       @dependentStates = dependentStates
       @meshFunctions   = meshFunctions
       @independent     = independent
+      @left            = left || var :"#{@independent.name}_i"
+      @right           = right || var :"#{@independent.name}_f"
       @mass_matrix     = mass_matrix || Matrix.identity(states.size)
     end
 
