@@ -62,7 +62,7 @@ module XOPTIMA
       @dependentStates = dependentStates
       @meshFunctions   = meshFunctions
       @independent     = independent
-      @mass_matrix     = mass_matrix || __id_matrix(states.size)
+      @mass_matrix     = mass_matrix || Matrix.identity(states.size)
     end
 
     # Set the initial, final, cyclic or generic boundary conditions.
@@ -100,7 +100,7 @@ module XOPTIMA
                         min:         -1,
                         scale:       +1)
 
-      cb = ControlBound.new(control, controlType, label, epsilon, max, maxabs, min, scale)
+      cb = ControlBound.new(control, controlType, label, epsilon, max, min, scale)
       if @control_bounds.include? cb 
         warn "Control bound for #{control} already added"
       end 
@@ -143,7 +143,6 @@ module XOPTIMA
         @label       = label
         @epsilon     = epsilon
         @max         = max 
-        @maxabs      = maxabs
         @min         = min 
         @scale       = scale
       end
@@ -182,7 +181,7 @@ module XOPTIMA
         "dependentStates: #{@controls}",
         "meshFunctions:   #{@meshFunctions}",
         "independent:     #{@independent}",
-        "mass_matrix:\n[#{@mass_matrix.map(&:to_s).join(",\n")}]",
+        "mass_matrix:\n#{@mass_matrix}",
         "==========================<Target >==========================",
         "lagrange: #{@lagrange}",
         "mayer:    #{@mayer}",
