@@ -199,16 +199,21 @@ module XOPTIMA
     # Defaul constraint bounds are -1 and +1.
     class ControlBound
 
-      attr_reader :control, :controlType, :label, :epsilon, :max, :maxabs, :min, :scale
+      attr_reader :control, :controlType, :label, :epsilon, :max, :min, :scale
       
-      def initialize(control, controlType, label, epsilon, max, min, scale)
+      def initialize(control, controlType, label, epsilon, max, min, scale, maxabs = nil)
         @control     = control
         @controlType = controlType
-        @label       = label
+        @label       = label || "control#{control}"
         @epsilon     = epsilon
-        @max         = max 
-        @min         = min 
         @scale       = scale
+        if maxabs
+          @max = maxabs
+          @min = -maxabs
+        else 
+          @max = max 
+          @min = min 
+        end
       end
 
       def ==(other)
