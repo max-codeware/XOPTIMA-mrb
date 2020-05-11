@@ -29,6 +29,25 @@ module XOPTIMA
 
     attr_accessor :verbose
 
+    attr_reader :rhs
+    attr_reader :states
+    attr_reader :controls
+    attr_reader :dependentStates
+    attr_reader :meshFunctions
+    attr_reader :independent
+    attr_reader :left
+    attr_reader :right
+    attr_reader :mass_matrix
+    attr_reader :generic
+    attr_reader :initial
+    attr_reader :final
+    attr_reader :cyclic
+    attr_reader :control_bounds
+    attr_reader :lagrange
+    attr_reader :mayer
+    attr_reader :parameters
+
+
     def initialize(name)
       @name    = name
       @loaded  = false
