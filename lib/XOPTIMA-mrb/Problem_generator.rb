@@ -24,17 +24,17 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 module XOPTIMA
-  class Problem
+  class OCProblem
 
 
 
   private 
 
-    def __ni
-      return @mass_matrix * diff(@states, @independent)
+    def __nu
+      return @mass_matrix * @states.map { |sv| var(:"#{sv.name}_dot")[@independent] }
     end
 
-    def __mu
+    def __eta
       return @mass_matrix.transpose * @lambdas
     end
 
@@ -42,9 +42,9 @@ module XOPTIMA
       h = 0
       @lambdas = []
       @rhs.each_with_index do |f, i| 
-        lambda_i = var(:"lambda#{i+1}")[@independent]
+        lambda_i = var(:"lambda#{i+1}__xo")[@independent]
         @lambdas << lambda_i
-        h += lambda_i* f
+        h += lambda_i * f
       end
       return h + @lagrange
     end
@@ -53,27 +53,25 @@ module XOPTIMA
       b = 0
       i = 1
       @final.each do |bj, vj| 
-        b += (bj[var(:"#{@independent}_f")] - vj) * var(:"omega#{i}")
+        b += (bj[@right] - vj) * var(:"omega#{i}__xo")
         i += 1
       end
 
       @initial.each do |bj, vj| 
-        b += (bj[var(:"#{@independent}_i")] - vj) * var(:"omega#{i}")
+        b += (bj[@left] - vj) * var(:"omega#{i}__xo")
         i += 1
       end
 
       @cyclic.each do |bj, vj| 
-        b += (bj[var(:"#{@independent}_i")] - vj[var(:"#{@independent}_f")]) * var(:"omega#{i}")
+        b += (bj[var(@left)] - vj[@right]) * var(:"omega#{i}__xo")
         i += 1
       end
 
       @generic.each do |bj, vj| 
-        b += (bj[var(:"#{@independent}_i")] - vj) * var(:"omega#{i}")
+        b += (bj[@left] - vj) * var(:"omega#{i}__xo")
         i += 1
       end
-      dict  ={ @independent => var(:"#{@independent}_f") }
-      mayer = @mayer.subs( dict ) if @mayer != 0
-      return b + (mayer || @mayer)
+      return b + @mayer
     end 
 
     def __df_dx 
@@ -81,12 +79,19 @@ module XOPTIMA
     end
 
     def __df_du
+      if @controls.empty?
+        # TODO
+      else
+        __jacobian(@rhs, @controls)
+      end
     end
 
     def __df_dp
+      __jacobian(@rhs, @parameters)
     end
 
     def __jacobian(v, q)
+      return Matrix.empty if q.empty?
       m = Array.new(v.size) do |i|
         v_i = v[i]
         Array.new(q.size) do |j|

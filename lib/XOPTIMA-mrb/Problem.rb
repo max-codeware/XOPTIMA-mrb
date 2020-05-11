@@ -65,6 +65,9 @@ module XOPTIMA
       # Target
       @lagrange = 0
       @mayer    = 0
+
+      # Parameters 
+      @parameters = []
     end
 
     def loadDynamicSystem(rhs:             [], 
@@ -139,25 +142,51 @@ module XOPTIMA
     def setTarget(lagrange: 0, mayer: 0)
       @lagrange = lagrange
       @mayer    = mayer
+      OCProblemChecker.check_target(self)
     end
 
-    def generateOCProblem(*arg, **argk)
+    def generateOCProblem(*arg, parameters: {}, **argk )
       raise DescriprionError, "Dynamic system not loaded for problem #{@name}" unless @loaded
+      collect_parameters
+      h     = __h_term
+      b     = __b_term
+      nu    = __nu 
+      eta   = __eta 
+      df_dx = __df_dx
+      df_du = __df_du
+      df_dp = __df_dp
+
       if @verbose
         __display_loaded_problem
+        puts "\nH:   #{h}"
+        puts "B:   #{b}"
+        puts "nu:  #{nu}"
+        puts "eta: #{eta}\n\n"
+        puts "df/dx: #{df_dx}\n\n"
+        puts "df/du: #{df_du}\n\n"
+        puts "df/dp: #{df_dp}"
       end
       
-      h = __h_term
-      puts "", "H: #{h}"
-      
-      b = __b_term
-      puts "B: #{b}"
+    end
 
-      ni = __ni 
-      mu = __mu 
-      puts "ni: #{ni}"
-      puts "mu: #{mu}"
-      puts "df/dx: #{__df_dx}"
+    def collect_parameters
+      @rhs.each           { |rhs| rhs.vars @parameters }
+      @mass_matrix.each   { |el| el.vars @parameters  }
+      @generic.each_value { |v| v.vars @parameters if v.is_symbolic? }
+      @initial.each_value { |v| v.vars @parameters if v.is_symbolic? }
+      @final.each_value   { |v| v.vars @parameters if v.is_symbolic? }
+      @cyclic.each_value  { |v| v.vars @parameters if v.is_symbolic? }
+
+      @states.each do |s|
+        @parameters.delete s #.variable
+      end
+      @controls.each do |c|
+        @parameters.delete c #.variable
+      end
+      @parameters.delete @independent
+      @parameters.delete @left 
+      @parameters.delete @right
+      @parameters
     end
 
   private
