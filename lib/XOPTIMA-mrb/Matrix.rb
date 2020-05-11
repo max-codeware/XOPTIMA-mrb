@@ -104,6 +104,15 @@ module XOPTIMA
       self 
     end
 
+    def each
+      @rows.each do |row|
+        row.each do |v|
+          yield v 
+        end 
+      end 
+      nil 
+    end
+
     def to_s 
     	"Matrix#{@rows}"
     end
