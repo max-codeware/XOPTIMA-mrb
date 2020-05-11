@@ -83,9 +83,11 @@ module XOPTIMA
       @dependentStates = dependentStates
       @meshFunctions   = meshFunctions
       @independent     = independent
-      @left            = left || var :"#{@independent.name}_i"
-      @right           = right || var :"#{@independent.name}_f"
+      @left            = left || var(:"#{@independent.name}_i")
+      @right           = right || var(:"#{@independent.name}_f")
       @mass_matrix     = mass_matrix || Matrix.identity(states.size)
+
+      OCProblemChecker.check_loaded_problem(self)
     end
 
     # Set the initial, final, cyclic or generic boundary conditions.
@@ -102,6 +104,8 @@ module XOPTIMA
       @initial = initial 
       @final   = final
       @cyclic  = cyclic
+
+      OCProblemChecker.check_bc(self)
       if @verbose 
         __display_bc @generic, :generic 
         __display_bc @initial, :initial
@@ -121,9 +125,11 @@ module XOPTIMA
                         epsilon:     1e-2,
                         max:         +1,
                         min:         -1,
+                        maxabs:     nil,
                         scale:       +1)
-
-      cb = ControlBound.new(control, controlType, label, epsilon, max, min, scale)
+      OCProblemChecker.assert(maxabs, Numeric, :maxabs, :addControlBound) if maxabs
+      cb = ControlBound.new(control, controlType, label, epsilon, max, min, scale, maxabs)
+      OCProblemChecker.check_control_bound(cb)
       if @control_bounds.include? cb 
         warn "Control bound for #{control} already added"
       end 
