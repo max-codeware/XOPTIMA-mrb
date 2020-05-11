@@ -30,6 +30,7 @@ module XOPTIMA
 		"./XOPTIMA-mrb/Problem.rb",
 		"./XOPTIMA-mrb/Matrix.rb",
 		"./XOPTIMA-mrb/Check.rb",
+		"./XOPTIMA-mrb/OCProblemChecker.rb",
 		"./XOPTIMA-mrb/Problem_generator.rb"
 	].each do |file|
     require_relative file
