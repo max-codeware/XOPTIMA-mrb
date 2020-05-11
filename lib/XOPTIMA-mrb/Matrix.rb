@@ -35,6 +35,10 @@ module XOPTIMA
       new rows
     end
 
+    def self.empty
+      new [] 
+    end
+
     def self.[](*rows)
       new rows
     end
