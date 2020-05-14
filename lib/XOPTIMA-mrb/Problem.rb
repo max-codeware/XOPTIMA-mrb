@@ -146,7 +146,7 @@ module XOPTIMA
       OCProblemChecker.check_target(self)
     end
 
-    def generateOCProblem(parameters: {}, mesh: {}, state_gess: {}, clean: true)
+    def generateOCProblem(parameters: {}, mesh: {}, state_guess: {}, clean: true)
       raise DescriprionError, "Dynamic system not loaded for problem #{@name}" unless @loaded
       @H     = __h_term
       @B     = __b_term
