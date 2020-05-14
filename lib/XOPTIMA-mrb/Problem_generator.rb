@@ -52,23 +52,32 @@ module XOPTIMA
     def __b_term
       b = 0
       i = 1
+      @omegas = []
       @final.each do |bj, vj| 
-        b += (bj[@right] - vj) * var(:"omega#{i}__xo")
+        omega_i = var(:"omega#{i}__xo")
+        @omegas << omega_i
+        b += (bj[@right] - vj) * omega_i
         i += 1
       end
 
       @initial.each do |bj, vj| 
-        b += (bj[@left] - vj) * var(:"omega#{i}__xo")
+        omega_i = var(:"omega#{i}__xo")
+        @omegas << omega_i
+        b += (bj[@left] - vj) * omega_i
         i += 1
       end
 
       @cyclic.each do |bj, vj| 
-        b += (bj[var(@left)] - vj[@right]) * var(:"omega#{i}__xo")
+        omega_i = var(:"omega#{i}__xo")
+        @omegas << omega_i
+        b += (bj[var(@left)] - vj[@right]) * omega_i
         i += 1
       end
 
       @generic.each do |bj, vj| 
-        b += (bj[@left] - vj) * var(:"omega#{i}__xo")
+        omega_i = var(:"omega#{i}__xo")
+        @omegas << omega_i
+        b += (bj[@left] - vj) * omega_i
         i += 1
       end
       return b + @mayer
