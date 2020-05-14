@@ -99,10 +99,6 @@ module XOPTIMA
     # * Final conditions are of type `x(zeta_f) = x_f`
     # * Cyclic conditions are of type `x(zeta_i) = x(zeta_f)`
     # * Generic conditions are of type `f(x(zeta_i)) = 0 or f(x(zeta_f)) = 0`
-    # If the command is called without arguments then default initial and final 
-    # boundary conditions are set.
-    # Alternatively the boundary condition can be specified providing a hash 
-    # for initial, final, cyclic or generic.
     def addBoundaryConditions(generic: {}, initial: {}, final: {}, cyclic: {})
       @generic = generic
       @initial = initial 
