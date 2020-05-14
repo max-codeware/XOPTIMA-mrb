@@ -35,33 +35,41 @@ module XOPTIMA
       new rows
     end
 
-    def self.empty
-      new [] 
+    def self.empty(r,c)
+      new [], r, c 
     end
 
     def self.[](*rows)
       new rows
     end
 
-    def initialize(rows)
+    def initialize(rows, r = nil, c = nil)
       raise ArgumentError, "Expected array, but #{rows} found" unless rows.is_a? Array
       rows.each do |r|
       	raise ArgumentError, "Expected array, but #{r} found" unless r.is_a? Array
       end
-      cols = rows.empty? ? 0 : rows.first.size
+      if rows.empty? 
+        raise TypeError, "number of rows is expected to be an integer, not #{r.class}" unless r.is_a? Integer
+        raise TypeError, "number of columns is expected to be an integer, not #{c.class}" unless c.is_a? Integer
+        @r = r 
+        @c = c 
+      else
+        @r = rows.size
+        @c = rows.first.size
+      end
       rows.each do |r| 
-      	raise ArgumentError, "Inconsistent matrix detected" unless r.size == cols 
+      	raise ArgumentError, "Inconsistent matrix detected" unless r.size == @c 
       end 
       @rows = rows
       Check.ensure_symbolic self
     end
 
     def rows 
-      @rows.size 
+      @r
     end
 
     def columns 
-      @rows.empty? ? 0 : @rows.first.size 
+      @c
     end
 
     def *(b)
