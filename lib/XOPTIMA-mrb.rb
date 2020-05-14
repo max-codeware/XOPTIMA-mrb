@@ -25,6 +25,8 @@
 
 module XOPTIMA
 
+	class OCPError < StandardError; end
+
 	[
 		"./XOPTIMA-mrb/version.rb",
 		"./XOPTIMA-mrb/Problem.rb",
