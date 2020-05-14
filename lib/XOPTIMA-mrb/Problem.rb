@@ -61,6 +61,7 @@ module XOPTIMA
 
       # Control bound
       @control_bounds = []
+      @optimizable_cb = []
 
       # Target
       @lagrange = 0

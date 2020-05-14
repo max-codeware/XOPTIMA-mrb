@@ -101,5 +101,55 @@ module XOPTIMA
       Matrix.new(m)
     end
 
+    def __generate_penalty
+      _P = 0
+      @control_bounds.each do |cb|
+        cb_x = cb.control[@independent]
+        _P += cb.scale * var(cb.label)[cb_x, cb.min, cb.max]
+        @optimizable_cb << cb if __is_optimizable_cb(cb, cb_x)
+      end
+      _P
+    end
+
+    def __is_optimizable_cb(cb, cb_x)
+      opt = true
+      dh_dc = @H.diff cb_x
+      @controls.each do |c|
+        name = c.to_var
+        opt &&= !(cb.min.depends_on?(name) || cb.min.depends_on?(c))
+        opt &&= !(cb.max.depends_on?(name) || cb.max.depends_on?(c))
+        opt &&= !(dh_dc.depends_on?(name) || dh_dc.depends_on?(c))
+      end
+      opt
+    end
+
+    def __collect_parameters
+      @rhs.each           { |rhs| rhs.free_vars @parameters }
+      @mass_matrix.each   { |el| el.free_vars @parameters   }
+      @generic.each_value { |v| v.free_vars @parameters }
+      @initial.each_value { |v| v.free_vars @parameters }
+      @final.each_value   { |v| v.free_vars @parameters }
+      @cyclic.each_value  { |v| v.free_vars @parameters }
+      @lagrange.free_vars(@parameters) if @lagrange.is_symbolic?
+      @P.free_vars @parameters
+
+      @states.each do |s|
+        @parameters.delete s.to_var
+      end
+      @controls.each do |c|
+        @parameters.delete c.to_var
+      end
+      @lambdas.each do |l|
+        @parameters.delete l.to_var
+      end 
+      @omegas.each do |o|
+        @parameters.delete o 
+      end
+      @parameters.delete @independent
+      @parameters.delete @left 
+      @parameters.delete @right
+      @parameters
+    end
+
   end
 end
