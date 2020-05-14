@@ -91,7 +91,7 @@ module XOPTIMA
     end
 
     def __jacobian(v, q)
-      return Matrix.empty if q.empty?
+      return Matrix.empty(v.size, 0) if q.empty?
       m = Array.new(v.size) do |i|
         v_i = v[i]
         Array.new(q.size) do |j|

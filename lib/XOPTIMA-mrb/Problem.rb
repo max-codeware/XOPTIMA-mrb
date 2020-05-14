@@ -125,68 +125,55 @@ module XOPTIMA
     def addControlBound(control, 
                         controlType: "U_QUADRATIC", 
                         label:       nil, 
-                        epsilon:     1e-2,
+                        epsilon:     1e-3,
+                        tolerance:   1e-3,
                         max:         +1,
                         min:         -1,
                         maxabs:     nil,
                         scale:       +1)
-      OCProblemChecker.assert(maxabs, Numeric, :maxabs, :addControlBound) if maxabs
-      cb = ControlBound.new(control, controlType, label, epsilon, max, min, scale, maxabs)
+      max    = OCProblemChecker.convert_to_symbolic(max, :max, :addControlBound)
+      min    = OCProblemChecker.convert_to_symbolic(min, :min, :addControlBound)
+      maxabs = OCProblemChecker.convert_to_symbolic(maxabs, :maxabs, :addControlBound) if maxabs
+      scale  = OCProblemChecker.convert_to_symbolic(scale, :scale, :addControlBound)
+
+      cb = ControlBound.new(control, controlType, label, epsilon, tolerance, max, min, scale, maxabs)
       OCProblemChecker.check_control_bound(cb)
-      if @control_bounds.include? cb 
-        warn "Control bound for #{control} already added"
-      end 
+      warn "Control bound for #{control} already added" if @control_bounds.include? cb 
+
       @control_bounds << cb
     end
 
     def setTarget(lagrange: 0, mayer: 0)
-      @lagrange = lagrange
-      @mayer    = mayer
+      @lagrange = OCProblemChecker.convert_to_symbolic(lagrange, :lagrange, :setTarget)
+      @mayer    = OCProblemChecker.convert_to_symbolic(mayer, :mayer, :setTarget)
       OCProblemChecker.check_target(self)
     end
 
-    def generateOCProblem(*arg, parameters: {}, **argk )
+    def generateOCProblem(parameters: {}, mesh: {}, state_gess: {}, clean: true)
       raise DescriprionError, "Dynamic system not loaded for problem #{@name}" unless @loaded
-      collect_parameters
-      h     = __h_term
-      b     = __b_term
-      nu    = __nu 
-      eta   = __eta 
-      df_dx = __df_dx
-      df_du = __df_du
-      df_dp = __df_dp
+      @H     = __h_term
+      @B     = __b_term
+      @nu    = __nu 
+      @eta   = __eta 
+      @df_dx = __df_dx
+      @df_du = __df_du
+      @df_dp = __df_dp
+      @P     = __generate_penalty
+      __collect_parameters
 
       if @verbose
         __display_loaded_problem
-        puts "\nH:   #{h}"
-        puts "B:   #{b}"
-        puts "nu:  #{nu}"
-        puts "eta: #{eta}\n\n"
-        puts "df/dx: #{df_dx}\n\n"
-        puts "df/du: #{df_du}\n\n"
-        puts "df/dp: #{df_dp}"
+        puts "\nH:   #{@H}"
+        puts "B:   #{@B}"
+        puts "nu:  #{@nu}"
+        puts "eta: #{@eta}\n\n"
+        puts "df/dx: #{@df_dx}\n\n"
+        puts "df/du: #{@df_du}\n\n"
+        puts "df/dp: #{@df_dp}\n\n"
+        puts "P: #{@P}\n"
+        puts "optimizable cb: #{@optimizable_cb.map(&:control).join(", ")}"
       end
       
-    end
-
-    def collect_parameters
-      @rhs.each           { |rhs| rhs.vars @parameters }
-      @mass_matrix.each   { |el| el.vars @parameters  }
-      @generic.each_value { |v| v.vars @parameters if v.is_symbolic? }
-      @initial.each_value { |v| v.vars @parameters if v.is_symbolic? }
-      @final.each_value   { |v| v.vars @parameters if v.is_symbolic? }
-      @cyclic.each_value  { |v| v.vars @parameters if v.is_symbolic? }
-
-      @states.each do |s|
-        @parameters.delete s #.variable
-      end
-      @controls.each do |c|
-        @parameters.delete c #.variable
-      end
-      @parameters.delete @independent
-      @parameters.delete @left 
-      @parameters.delete @right
-      @parameters
     end
 
   private
@@ -199,13 +186,14 @@ module XOPTIMA
     # Defaul constraint bounds are -1 and +1.
     class ControlBound
 
-      attr_reader :control, :controlType, :label, :epsilon, :max, :min, :scale
+      attr_reader :control, :controlType, :label, :epsilon, :tolerance, :max, :min, :scale
       
-      def initialize(control, controlType, label, epsilon, max, min, scale, maxabs = nil)
+      def initialize(control, controlType, label, epsilon, tolerance, max, min, scale, maxabs = nil)
         @control     = control
         @controlType = controlType
         @label       = label || "control#{control}"
         @epsilon     = epsilon
+        @tolerance   = tolerance
         @scale       = scale
         if maxabs
           @max = maxabs
