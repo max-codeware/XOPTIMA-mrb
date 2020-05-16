@@ -74,6 +74,7 @@ module XOPTIMA
     def loadDynamicSystem(rhs:             [], 
                           states:          [], 
                           controls:        [], 
+                          params:          [], # => Pvars
                           dependentStates: [],
                           meshFunctions:   [],
                           independent:     var(:t),
@@ -84,6 +85,7 @@ module XOPTIMA
       @rhs             = rhs
       @states          = states 
       @controls        = controls 
+      @params          = params
       @dependentStates = dependentStates
       @meshFunctions   = meshFunctions
       @independent     = independent
@@ -188,7 +190,7 @@ module XOPTIMA
       def initialize(control, controlType, label, epsilon, tolerance, max, min, scale, maxabs = nil)
         @control     = control
         @controlType = controlType
-        @label       = label || "control#{control}"
+        @label       = label || "#{control}Control"
         @epsilon     = epsilon
         @tolerance   = tolerance
         @scale       = scale
