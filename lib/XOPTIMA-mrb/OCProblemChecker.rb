@@ -25,37 +25,58 @@
 
 module XOPTIMA
 
+  # Helper module to perform the argument checks on the inputs of
+  # a problem
   module OCProblemChecker
     class << self
     
+      ##
+      # It checks the input parameters of `Problem#loadDynamicSystem`
       def check_loaded_problem(problem)
       	m = "loadDynamicSystem"
 
-        for param in [:rhs, :states, :controls]
+        # `states` and `controls` must be array containing only
+        # objects of type `SymDesc::DependentVar`
+        for param in [:states, :controls]
           v = problem.send(param)
           assert(v, Array, param, m)
           assert_array_of(v, SymDesc::DependentVar, param)
         end
-
-      	for param in [ :dependentStates, :meshFunctions]
+        
+        # These parameters must be arrays containing symbolic expressions 
+        # or objects that can be converted into symbolic ones
+      	for param in [:rhs, :dependentStates, :meshFunctions]
       		v = problem.send(param)
       		assert(v, Array, param, m)
         	assert_symbolic_array(v, param)
         end
+
+        # The independent variable and the left and right sides must be
+        # only symbolic variables
         assert(problem.independent,     SymDesc::Variable, :independent, m, strict: true)
         assert(problem.left,            SymDesc::Variable, :left,        m, strict: true)
         assert(problem.right,           SymDesc::Variable, :right,       m, strict: true)
-
+        
+        # Check if `mass_matrix` is a `XOPTIMA::Matrix`
         assert(problem.mass_matrix, Matrix, :mass_matrix, m)
         
+        # Check if the states and the controls are functions depending only on
+        # the independent variable
         problem.states.each { |state| assert_dependency_only_on(state, :state, problem.independent) }
         problem.controls.each { |ctrl| assert_dependency_only_on(ctrl, :controls, problem.independent) }
         
+        # Check empty intersection of controls and states
         if !((insct = problem.controls & problem.states).empty?)
           raise OCPError, "Functions #{insct.join(", ")} appears both in state vars and controls"
         end
       end
 
+      ##
+      # It checks the input parameters of `addBoundaryConditions`.
+      # The boundary conditions must be saved on Hash tables having
+      # as key a symbolic variable and as value a symblic expression or
+      # an object convertible to a symbolic one. Boundary contdition names
+      # must appear in states.
       def check_bc(problem)
       	m = "addBoundaryConditions"
         state_names = problem.states.map { |dv| dv.name }
@@ -66,6 +87,13 @@ module XOPTIMA
         end 
       end
 
+      ##
+      # It checks the types of a control bound object:
+      # * control: must be a symbolic variable
+      # * controlType: must be a string
+      # * label: must be a string
+      # * epsilon: must be a numeric value
+      # * tolerance: must be a numeric value
       def check_control_bound(cb)
       	m = "addControlBound"
       	assert(cb.control,     SymDesc::Variable, :control,     m, strict: true)
@@ -75,15 +103,21 @@ module XOPTIMA
         assert(cb.tolerance,   Numeric,           :tolerance,   m)
       end
 
+      ##
+      # It checks the lagrange and mayer targets acquired from `Problem#setTarget`.
+      # They must be or symbolic expressions or numbers.
       def check_target(problem)
       	assert_with_block("Parameter `lagrange' of `setTarget' is not symbolic or numeric") do
       		problem.lagrange.is_symbolic? || problem.lagrange.is_a?(Numeric)
-          assert_dependency_only_on(problem.lagrange, :lagrange, problem.independent)
       	end
+        # `lagrange` must depend on the independent var
+        assert_dependency_only_on(problem.lagrange, :lagrange, problem.independent)
+
       	assert_with_block("Parameter `mayer' of `setTarget' is not symbolic or numeric") do
       		problem.mayer.is_symbolic? || problem.mayer.is_a?(Numeric)
-          assert_dependency_only_on(problem.mayer, :mayer, problem.left, problem.right)
         end
+        # `mayer` must depend on the left side or the right
+        assert_dependency_only_on(problem.mayer, :mayer, problem.left, problem.right)
       end
 
       def assert(a, type, param, met, strict: false)
