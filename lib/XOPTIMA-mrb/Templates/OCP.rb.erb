@@ -1,0 +1,136 @@
+class COMMON_Build
+  DATA = {}
+  DATA[:numThread]            = <%=numThread %>
+  #--------------------------
+  DATA[:max_iter]             = <%=max_iter %>
+  DATA[:max_step_iter]        = <%=max_step_iter %>
+  DATA[:max_accumulated_iter] = <%=max_accumulated_iter %>
+  DATA[:tolerance]            = <%=tolerance%>
+  #--------------------------
+  DATA[:Xvars]        = <%=xvars%>
+  DATA[:Lvars]        = <%=lvars%>
+  DATA[:Uvars]        = <%=uvars%>
+  DATA[:Pvars]        = <%=pvars%>
+  DATA[:OMEGAvars]    = <%=omega_vars%>
+  DATA[:POSTnames]    = <%=post_names%>
+  DATA[:INTPOSTnames] = <%=int_post_names%>
+  DATA[:Qvars]        = <%=qvars%>
+
+  #--------------------------
+  DATA[:bvp_parameters]             = <%=bvp_parameters%>
+  DATA[:guess_parameters]           = <%=guess_parameters%>
+  DATA[:bc_parameters]              = <%=bc_parameters%>
+  DATA[:post_processing_parameters] = <%=post_processing_parameters%>
+  DATA[:user_function_parameters]   = <%=user_function_parameters%>
+  DATA[:continuation_parameters]    = <%=continuation_parameters%>
+  DATA[:constraint_parameters]      = <%=constraint_parameters%>
+
+  #--------------------------
+  DATA[:ModelParameters] = <%=model_parameters%>
+
+  #--------------------------
+  DATA[:AuxiliaryParameters] = <%=aux_params%>
+
+  #--------------------------
+  DATA[:UserFunctions]    = <%=user_functions%>
+  DATA[:UserMapFunctions] = <%=user_map_functions%>
+  DATA[:UserFunctionsClassInstances] = [
+  <% for ufci in user_f_class_i %>
+    <%=ufci%>
+  <% end %>
+  ]
+
+  #--------------------------
+  DATA[:Constraint1D] = <%=constraint1D%>
+  DATA[:Constraint2D] = <%=constraint2D%>
+  DATA[:ConstraintU ] = [
+  <% for cb in constraint_u %>
+    {
+      :min       => "<%=cb.min%>",
+      :max       => "<%=cb.max%>",
+      :epsilon   => "<%=cb.epsilon%>",
+      :type      => "<%=cb.type%>",
+      :name      => "<%=cb.label%>",
+      :tolerance => "<%=cb.tolerance%>",
+      :class     => "PenaltyBarrierU",        #!!!
+      :u         => "<%=cb.control[qvars]%>",
+      :scale     => "<%=cb.scale%>"
+    },
+  <% end %>
+  ]
+  DATA[:Bc] = [
+  <% for name, value in generic_c%>
+    {
+      :name  => "initial_<%=name%>",
+      :name1 => "initial_<%=name%>",
+      :value => "<%=value%>"
+    },
+  <% end %>
+  <% for name, value in initial_c%>
+    {
+      :name  => "initial_<%=name%>",
+      :name1 => "initial_<%=name%>",
+      :value => "<%=value%>"
+    },
+  <% end %>
+  <% for name, value in final_c%>
+    {
+      :name  => "final_<%=name%>",
+      :name1 => "final_<%=name%>",
+      :value => "<%=value%>"
+    },
+  <% for name, value in icyclic_c%>
+    {
+      :name  => "initial_<%=name%>",
+      :name1 => "initial_<%=name%>",
+      :value => "<%=value%>"
+    },
+  <% end %>
+  ]
+  DATA[:q_n_eqns]               = <%=q_n_eqns%>
+  DATA[:u_n_eqns]               = <%=u_n_eqns%>
+  DATA[:g_n_eqns]               = <%=g_n_eqns%>
+  DATA[:jump_n_eqns]            = <%=jump_n_eqns%>
+  DATA[:bc_n_eqns]              = <%=bc_n_eqns%>
+  DATA[:adjointBC_n_eqns]       = <%=adjointBC_n_eqns%>
+  DATA[:rhs_ode_n_eqns]         = <%=rhs_ode_n_eqns%>
+  DATA[:Hx_n_eqns]              = <%=hx_n_eqns%>
+  DATA[:Hu_n_eqns]              = <%=hu_n_eqns%>
+  DATA[:Hp_n_eqns]              = <%=hp_n_eqns%>
+  DATA[:eta_n_eqns]             = <%=eta_n_eqns%>
+  DATA[:nu_n_eqns]              = <%=nu_n_eqns%>
+  DATA[:post_n_eqns]            = <%=post_n_eqns%>
+  DATA[:integrated_post_n_eqns] = <%=integrated_post_n_eqns%>
+
+  DATA[:DuDxlp] = {
+    :n_rows  => <%=dudxlp_nr%>, # n. controlli
+    :n_cols  => <%=dudxlp_nc%>, # 2 * (v. stato) + n. params
+  }
+
+  DATA[:x_guess_n_eqns]    = <%=x_guess_n_eqns%> # n. stati in guess
+  DATA[:l_guess_n_eqns]    = <%=l_guess_n_eqns%> # 
+  DATA[:p_guess_n_eqns]    = <%=p_guess_n_eqns%>
+  DATA[:node_check_n_eqns] = <%=node_check_n_eqns%>
+  DATA[:NodeCheckStrings]  = <%=nodeCheckStrings%>
+  DATA[:cell_check_n_eqns] = <%=cell_check_n_eqns%>
+  DATA[:CellCheckStrings]  = <%=cellCheckStrings%>
+  DATA[:pars_check_n_eqns] = <%=pars_check_n_eqns%>
+  DATA[:ParsCheckStrings]  = <%=parsCheckStrings%>
+  DATA[:u_guess_n_eqns]    = <%=u_guess_n_eqns%> # N. guess per i controlli
+  DATA[:u_check_n_eqns]    = <%=u_check_n_eqns%> # lungezza vettore diu check
+
+  DATA[:NumContinuationStep] = <%=numContinuationStep%>
+
+  #--------------------------(ALIAS)
+  DATA[:alias] = [
+  <% for alias_b in aliases%>
+    <%=alias_b%>
+  <% end %>
+  ]
+  DATA[:alias_names] = [
+  <% for alias_name in alias_names %>
+    <%=alias_name%>
+  <% end %>
+  ]
+
+end
