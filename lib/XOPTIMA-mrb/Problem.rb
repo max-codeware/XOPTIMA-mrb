@@ -63,6 +63,19 @@ module XOPTIMA
 
     attr_reader :mesh
 
+    attr_reader :A
+    attr_reader :B
+    attr_reader :nu 
+    attr_reader :eta 
+    attr_reader :df_dx
+    attr_reader :df_du
+    attr_reader :df_dp
+    attr_reader :dH_dx
+    attr_reader :dH_du
+    attr_reader :dH_dp
+    attr_reader :P
+
+
 
     def initialize(name)
       @name    = name
@@ -197,6 +210,9 @@ module XOPTIMA
       @df_dx = __df_dx
       @df_du = __df_du
       @df_dp = __df_dp
+      @dH_dx = __dH_dx
+      @dH_du = __dH_du
+      @dH_dp = __dH_dp
       @P     = __generate_penalty
       __collect_parameters
 

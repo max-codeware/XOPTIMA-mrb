@@ -107,6 +107,24 @@ module XOPTIMA
       end
       return b + @mayer
     end 
+    
+    # Calculates the derivative of H w.r.t. the states `x`.
+    # It returns a vector as an array
+    def __dH_dx
+      @states.map { |s| @H.diff(s) }
+    end
+
+    # Calculates the derivative of H w.r.t. the controls `u`.
+    # It returns a vector as an array
+    def __dH_du
+      @controls.map { |c| @H.diff(c) }
+    end
+
+    # Calculates the derivative of H w.r.t. the parameters `p`.
+    # It returns a vector as an array
+    def __dH_du
+      @controls.map { |p| @H.diff(p) }
+    end
 
     ##
     # It calculates the jacobian of the right hand side
