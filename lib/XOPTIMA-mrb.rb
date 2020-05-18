@@ -36,7 +36,9 @@ module XOPTIMA
 		"./XOPTIMA-mrb/OCProblemChecker.rb",
 		"./XOPTIMA-mrb/Problem_generator.rb",
 		"./XOPTIMA-mrb/Generator/GeneratorHelper.rb",
-		"./XOPTIMA-mrb/Generator/FileGenerator.rb"
+		"./XOPTIMA-mrb/Generator/FileGenerator.rb",
+		"./XOPTIMA-mrb/Templates/OCP.erb.rb",
+		"./XOPTIMA-mrb/Templates/UserFunctionsCI.erb.rb",
 	].each do |file|
     require_relative file
 	end
