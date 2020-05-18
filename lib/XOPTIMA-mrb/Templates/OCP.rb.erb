@@ -123,13 +123,31 @@ class COMMON_Build
 
   #--------------------------(ALIAS)
   DATA[:alias] = [
-  <% for alias_b in aliases%>
-    <%=alias_b%>
+  <%# control_bounds already given%>
+  <% for cb in control_bounds%>
+    "#define ALIAS_<%=cb.label%>_D_3(__t1, __t2, __t3) <%=cb.label%>.D_3( __t1, __t2, __t3)",
+    "#define ALIAS_<%=cb.label%>_D_2(__t1, __t2, __t3) <%=cb.label%>.D_2( __t1, __t2, __t3)",
+    "#define ALIAS_<%=cb.label%>_D_1(__t1, __t2, __t3) <%=cb.label%>.D_1( __t1, __t2, __t3)",
+    "#define ALIAS_<%=cb.label%>_D_3_3(__t1, __t2, __t3) <%=cb.label%>.D_3_3( __t1, __t2, __t3)",
+    "#define ALIAS_<%=cb.label%>_D_2_3(__t1, __t2, __t3) <%=cb.label%>.D_2_3( __t1, __t2, __t3)",
+    "#define ALIAS_<%=cb.label%>_D_2_2(__t1, __t2, __t3) <%=cb.label%>.D_2_2( __t1, __t2, __t3)",
+    "#define ALIAS_<%=cb.label%>_D_1_3(__t1, __t2, __t3) <%=cb.label%>.D_1_3( __t1, __t2, __t3)",
+    "#define ALIAS_<%=cb.label%>_D_1_2(__t1, __t2, __t3) <%=cb.label%>.D_1_2( __t1, __t2, __t3)",
+    "#define ALIAS_<%=cb.label%>_D_1_1(__t1, __t2, __t3) <%=cb.label%>.D_1_1( __t1, __t2, __t3)",
   <% end %>
   ]
   DATA[:alias_names] = [
-  <% for alias_name in alias_names %>
-    <%=alias_name%>
+  <%# control_bounds already given%>
+  <% for bc in control_bounds %>
+    "<%=bc.label%>_D_3",
+    "<%=bc.label%>_D_2",
+    "<%=bc.label%>_D_1",
+    "<%=bc.label%>_D_3_3",
+    "<%=bc.label%>_D_2_3",
+    "<%=bc.label%>_D_2_2",
+    "<%=bc.label%>_D_1_3",
+    "<%=bc.label%>_D_1_2",
+    "<%=bc.label%>_D_1_1",
   <% end %>
   ]
 
