@@ -75,7 +75,7 @@ module XOPTIMA
       @final   = {}
       @cyclic  = {}
 
-      # Control bound
+      # Control bounds
       @control_bounds = []
       @optimizable_cb = []
 
@@ -83,8 +83,29 @@ module XOPTIMA
       @lagrange = 0
       @mayer    = 0
 
+      # Multipliers
+      @lambdas = []
+      @omegas  = []
+
       # Parameters 
       @parameters = []
+      @params     = []
+      @aux_params = []
+
+      # Names
+      @post_names     = []
+      @int_post_names = []
+
+      # User functions
+      @user_functions     = []
+      @user_map_functions = []
+
+      # Processing info
+      @num_threads          = 4
+      @max_iter             = 300
+      @max_step_iter        = 40
+      @max_accumulated_iter = 800
+      @tolerance            = 1e-09
     end
 
     def loadDynamicSystem(rhs:             [], 
@@ -166,6 +187,9 @@ module XOPTIMA
 
     def generateOCProblem(parameters: {}, mesh: {}, state_guess: {}, clean: true)
       raise DescriprionError, "Dynamic system not loaded for problem #{@name}" unless @loaded
+
+      @mesh = mesh 
+
       @H     = __h_term
       @B     = __b_term
       @nu    = __nu 
