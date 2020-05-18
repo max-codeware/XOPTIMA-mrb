@@ -38,14 +38,28 @@ module XOPTIMA
     attr_reader :left
     attr_reader :right
     attr_reader :mass_matrix
+
     attr_reader :generic
     attr_reader :initial
     attr_reader :final
     attr_reader :cyclic
+
     attr_reader :control_bounds
+
     attr_reader :lagrange
     attr_reader :mayer
-    attr_reader :parameters
+
+    attr_reader :parameters, :params, :aux_params
+    attr_reader :num_threads
+    attr_reader :max_iter
+    attr_reader :max_step_iter
+    attr_reader :max_accumulated_iter
+    attr_reader :tolerance
+    attr_reader :lambdas, :omegas
+    attr_reader :post_names, :int_post_names
+    attr_reader :user_functions, :user_map_functions
+
+    attr_reader :mesh
 
 
     def initialize(name)
