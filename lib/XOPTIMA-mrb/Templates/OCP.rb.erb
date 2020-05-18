@@ -88,17 +88,17 @@ class COMMON_Build
   <% end %>
   ]
   DATA[:q_n_eqns]               = <%=q_n_eqns%>
-  DATA[:u_n_eqns]               = <%=u_n_eqns%>
-  DATA[:g_n_eqns]               = <%=g_n_eqns%>
+  DATA[:u_n_eqns]               = <%=controls_size%>
+  DATA[:g_n_eqns]               = <%=control_bounds_size%>
   DATA[:jump_n_eqns]            = <%=jump_n_eqns%>
-  DATA[:bc_n_eqns]              = <%=bc_n_eqns%>
+  DATA[:bc_n_eqns]              = <%=bc_count%>
   DATA[:adjointBC_n_eqns]       = <%=adjointBC_n_eqns%>
-  DATA[:rhs_ode_n_eqns]         = <%=rhs_ode_n_eqns%>
-  DATA[:Hx_n_eqns]              = <%=hx_n_eqns%>
+  DATA[:rhs_ode_n_eqns]         = <%=rhs_size%>
+  DATA[:Hx_n_eqns]              = <%=dH_dx_size%>
   DATA[:Hu_n_eqns]              = <%=hu_n_eqns%>
   DATA[:Hp_n_eqns]              = <%=hp_n_eqns%>
-  DATA[:eta_n_eqns]             = <%=eta_n_eqns%>
-  DATA[:nu_n_eqns]              = <%=nu_n_eqns%>
+  DATA[:eta_n_eqns]             = <%=eta_size%>
+  DATA[:nu_n_eqns]              = <%=nu_size%>
   DATA[:post_n_eqns]            = <%=post_n_eqns%>
   DATA[:integrated_post_n_eqns] = <%=integrated_post_n_eqns%>
 
