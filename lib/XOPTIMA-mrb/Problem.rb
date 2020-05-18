@@ -27,6 +27,8 @@ module XOPTIMA
   class OCProblem
     class DescriprionError < StandardError; end
 
+    include ProblemHelper
+
     attr_accessor :verbose
 
     attr_reader :rhs
