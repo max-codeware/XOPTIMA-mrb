@@ -67,5 +67,9 @@ module XOPTIMA
     	[]
     end
 
+    def bc_count
+    	@generic.size + @initial.size + @final.size + @cyclic.size
+    end
+
   end
 end
