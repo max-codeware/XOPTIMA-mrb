@@ -60,7 +60,6 @@ module XOPTIMA
     # This method saves the `lambdaj(t)` elements in `@lambdas`
     def __h_term 
       h = 0
-      @lambdas = []
       @rhs.each_with_index do |f, i| 
         lambda_i = var(:"lambda#{i+1}__xo")[@independent]
         @lambdas << lambda_i
@@ -79,7 +78,6 @@ module XOPTIMA
     def __b_term
       b = 0
       i = 1
-      @omegas = []
       @final.each do |bj, vj| 
         omega_i = var(:"omega#{i}__xo")
         @omegas << omega_i
