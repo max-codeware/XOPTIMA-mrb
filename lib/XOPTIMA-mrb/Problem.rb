@@ -143,6 +143,8 @@ module XOPTIMA
       @right           = right || var(:"#{@independent.name}_f")
       @mass_matrix     = mass_matrix || Matrix.identity(states.size)
 
+      @generator = FileGenerator.new(self)
+
       OCProblemChecker.check_loaded_problem(self)
     end
 
@@ -229,6 +231,7 @@ module XOPTIMA
         puts "optimizable cb: #{@optimizable_cb.map(&:control).join(", ")}"
       end
       
+      @generator.render_files
     end
 
   private
