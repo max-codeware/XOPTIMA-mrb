@@ -47,10 +47,10 @@ class COMMON_Build
   DATA[:Lvars]        = <%=lambdas%>
   DATA[:Uvars]        = <%=controls%>
   DATA[:Pvars]        = <%=params%>
-  DATA[:OMEGAvars]    = <%=omega_vars%>
+  DATA[:OMEGAvars]    = <%=omegas%>
   DATA[:POSTnames]    = <%=post_names%>
   DATA[:INTPOSTnames] = <%=int_post_names%>
-  DATA[:Qvars]        = <%=independent%>
+  DATA[:Qvars]        = "<%=independent%>"
 
   #--------------------------
   DATA[:bvp_parameters]             = <%=bvp_parameters%>
@@ -72,7 +72,7 @@ class COMMON_Build
   DATA[:UserMapFunctions] = <%=user_map_functions%>
   DATA[:UserFunctionsClassInstances] = [
   <% for ufci in user_f_class_i %>
-    <%=ufci%>
+    <%=ufci%>\
   <% end %>
   ]
 
@@ -85,7 +85,7 @@ class COMMON_Build
       :min       => "<%=cb.min%>",
       :max       => "<%=cb.max%>",
       :epsilon   => "<%=cb.epsilon%>",
-      :type      => "<%=cb.type%>",
+      :type      => "<%=cb.controlType%>",
       :name      => "<%=cb.label%>",
       :tolerance => "<%=cb.tolerance%>",
       :class     => "PenaltyBarrierU",        #!!!
@@ -101,20 +101,21 @@ class COMMON_Build
       :name1 => "initial_<%=name%>",
       :value => "<%=value%>"
     },
-  <% end %>
+  <% end %>\
   <% for name, value in initial%>
     {
       :name  => "initial_<%=name%>",
       :name1 => "initial_<%=name%>",
       :value => "<%=value%>"
     },
-  <% end %>
+  <% end %>\
   <% for name, value in final%>
     {
       :name  => "final_<%=name%>",
       :name1 => "final_<%=name%>",
       :value => "<%=value%>"
     },
+  <% end %>\
   <% for name, value in cyclic%>
     {
       :name  => "initial_<%=name%>",
@@ -125,14 +126,14 @@ class COMMON_Build
   ]
   DATA[:q_n_eqns]               = <%=q_n_eqns%>
   DATA[:u_n_eqns]               = <%=controls_size%>
-  DATA[:g_n_eqns]               = <%=control_bounds_size%>
+  DATA[:g_n_eqns]               = <%=controls_size%>
   DATA[:jump_n_eqns]            = <%=jump_n_eqns%>
   DATA[:bc_n_eqns]              = <%=bc_count%>
   DATA[:adjointBC_n_eqns]       = <%=adjointBC_n_eqns%>
   DATA[:rhs_ode_n_eqns]         = <%=rhs_size%>
   DATA[:Hx_n_eqns]              = <%=dH_dx_size%>
-  DATA[:Hu_n_eqns]              = <%=hu_n_eqns%>
-  DATA[:Hp_n_eqns]              = <%=hp_n_eqns%>
+  DATA[:Hu_n_eqns]              = <%=dH_du_size%>
+  DATA[:Hp_n_eqns]              = <%=dH_du_size%>
   DATA[:eta_n_eqns]             = <%=eta_size%>
   DATA[:nu_n_eqns]              = <%=nu_size%>
   DATA[:post_n_eqns]            = <%=post_n_eqns%>
@@ -158,8 +159,8 @@ class COMMON_Build
   DATA[:NumContinuationStep] = <%=numContinuationStep%>
 
   #--------------------------(ALIAS)
-  DATA[:alias] = [
-  <%# control_bounds already given%>
+  DATA[:alias] = [\
+  <%# control_bounds already given%>\
   <% for cb in control_bounds%>
     "#define ALIAS_<%=cb.label%>_D_3(__t1, __t2, __t3) <%=cb.label%>.D_3( __t1, __t2, __t3)",
     "#define ALIAS_<%=cb.label%>_D_2(__t1, __t2, __t3) <%=cb.label%>.D_2( __t1, __t2, __t3)",
@@ -172,8 +173,8 @@ class COMMON_Build
     "#define ALIAS_<%=cb.label%>_D_1_1(__t1, __t2, __t3) <%=cb.label%>.D_1_1( __t1, __t2, __t3)",
   <% end %>
   ]
-  DATA[:alias_names] = [
-  <%# control_bounds already given%>
+  DATA[:alias_names] = [\
+  <%# control_bounds already given%>\
   <% for bc in control_bounds %>
     "<%=bc.label%>_D_3",
     "<%=bc.label%>_D_2",
@@ -188,4 +189,13 @@ class COMMON_Build
   ]
 
 end
+
+<% for sparse_mx in sparse_mxs %>
+  $SparseMatrix_<%=sparse_mx.label%> = {
+    :n_rows  => <%=sparse_mx.rows%>,
+    :n_cols  => <%=sparse_mx.cols%>,
+    :nnz     => <%=sparse_mx.nnz%>,
+    :pattern => <%=sparse_mx.pattern%>
+  }
+<% end %>
 T
