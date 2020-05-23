@@ -203,6 +203,8 @@ module XOPTIMA
     def generateOCProblem(parameters: {}, mesh: {}, state_guess: {}, clean: true)
       raise DescriprionError, "Dynamic system not loaded for problem #{@name}" unless @loaded
 
+      @states_i_f = __states_i_f
+      
       @mesh = mesh 
 
       @H     = __h_term
@@ -216,6 +218,8 @@ module XOPTIMA
       @dH_du = __dH_du
       @dH_dp = __dH_dp
       @P     = __generate_penalty
+      @bc    = __bc
+      @DadjointBC = @states_i_f.map { |xj| @B.diff(xj) }
       __collect_parameters
 
       if @verbose
