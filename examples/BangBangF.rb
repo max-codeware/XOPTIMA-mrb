@@ -47,6 +47,6 @@ problem.setTarget(mayer: -x[t_f])
 #Problem generation
 problem.generateOCProblem(
   clean: false,
-  mesh: { s0: 0, segments: [ {length: 1, n: 100}]},
+  mesh: { s0: 0, segments: [ {length: 1, n: 100} ]},
   state_guess: {v => t * (1 - t)}
 )
