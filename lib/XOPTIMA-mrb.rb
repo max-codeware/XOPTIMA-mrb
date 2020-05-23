@@ -29,7 +29,7 @@ module XOPTIMA
 
 	[
 		"./XOPTIMA-mrb/version.rb",
-		"./XOPTIMA-mrb/ProblemHelper.rb"
+		"./XOPTIMA-mrb/ProblemHelper.rb",
 		"./XOPTIMA-mrb/Problem.rb",
 		"./XOPTIMA-mrb/Matrix.rb",
 		"./XOPTIMA-mrb/Check.rb",
@@ -38,7 +38,7 @@ module XOPTIMA
 		"./XOPTIMA-mrb/Generator/GeneratorHelper.rb",
 		"./XOPTIMA-mrb/Generator/FileGenerator.rb",
 		"./XOPTIMA-mrb/Templates/OCP.erb.rb",
-		"./XOPTIMA-mrb/Templates/UserFunctionsCI.erb.rb",
+		"./XOPTIMA-mrb/Templates/UserFunctionsCI.erb.rb"
 	].each do |file|
     require_relative file
 	end
