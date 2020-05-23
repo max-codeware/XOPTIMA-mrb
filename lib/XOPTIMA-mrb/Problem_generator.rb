@@ -231,5 +231,102 @@ module XOPTIMA
       @parameters
     end
 
+    def __states_i_f
+      states_i_f = []
+      dict       = { @independent => @left}
+      @states.each { |s| states_i_f << s.subs(dict)  }
+      dict       = { @independent => @right}
+      @states.each { |s| states_i_f << s.subs(dict) }
+      return states_i_f
+    end
+
+    #############################################################################
+    #  ____                              __  __       _        _                #
+    # / ___| _ __   __ _ _ __ ___  ___  |  \/  | __ _| |_ _ __(_) ___ ___  ___  #
+    # \___ \| '_ \ / _` | '__/ __|/ _ \ | |\/| |/ _` | __| '__| |/ __/ _ \/ __| #
+    #  ___) | |_) | (_| | |  \__ \  __/ | |  | | (_| | |_| |  | | (_|  __/\__ \ #
+    # |____/| .__/ \__,_|_|  |___/\___| |_|  |_|\__,_|\__|_|  |_|\___\___||___/ #
+    #       |_|                                                                 #
+    #############################################################################
+    
+    def __DgDxlp
+    end
+
+    def __DgDu
+    end
+
+    def __DjumpDxlp
+    end
+
+    def __DbcDx
+      return __jacobian(@bc,@states_i_f).to_sparse("DbcDx")
+    end
+
+    def __DbcDp
+      return __jacobian(@bc,@params).to_sparse("DbcDp")
+    end
+
+    def __DadjointBCDx
+
+      return __jacobian(@DadjointBC, @states_i_f).to_sparse("DadjointBCDx")
+    end
+
+    def __DadjointBCDp
+      return __jacobian(@DadjointBC, @params).to_sparse("DadjointBCDp")
+    end
+
+    def __DHxDx
+      return __jacobian(@dH_dx, @states).to_sparse("DHxDx")
+    end
+
+    def __DHxDp
+      return __jacobian(@dH_dx, @params).to_sparse("DHxDp")
+    end
+
+    def __DHuDx
+      return __jacobian(@dH_du, @states).to_sparse("DHuDx")
+    end
+
+    def __DHuDp
+      return __jacobian(@dH_du, @params).to_sparse("DHuDp")
+    end
+
+    def __DHpDp
+      return __jacobian(@dH_dp, @params).to_sparse("DHpDp")
+    end
+
+    def __Drhs_odeDx
+      return __jacobian(@rhs, @states).to_sparse("Drhs_odeDx")
+    end
+
+    def __Drhs_odeDp
+      return __jacobian(@rhs, @params).to_sparse("Drhs_odeDp")
+    end
+
+    def __Drhs_odeDu
+      return __jacobian(@rhs, @controls).to_sparse("Drhs_odeDu")
+    end
+
+    def __A_ode
+      return @mass_matrix.to_sparse("A_ode")
+    end
+
+    def __DetaDx
+      return __jacobian(@eta, @states).to_sparse("DetaDx")
+    end
+
+    def __DetaDp
+      return __jacobian(@eta, @params).to_sparse("DetaDp")
+    end
+
+    def __DnuDx
+      return __jacobian(@nu, @states).to_sparse("DnuDx")
+    end
+
+    def __DnuDp
+      return __jacobian(@nu, @params).to_sparse("DnuDp")
+    end
+
+
   end
 end

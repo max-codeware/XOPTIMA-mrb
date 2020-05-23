@@ -71,5 +71,30 @@ module XOPTIMA
     	@generic.size + @initial.size + @final.size + @cyclic.size
     end
 
+    def sparse_mxs
+      @sparse_mxs = [
+        #__DgDxlp,
+        #__DgDu,
+        #__DjumpDxlp,
+        __DbcDx,
+        __DbcDp,
+        __DadjointBCDx,
+        __DadjointBCDp,
+        __DHxDx,
+        __DHxDp,
+        __DHuDx,
+        __DHuDp,
+        __DHpDp,
+        __Drhs_odeDx,
+        __Drhs_odeDp,
+        __Drhs_odeDu,
+        __A_ode,
+        __DetaDx,
+        __DetaDp,
+        __DnuDx,
+        __DnuDp
+      ]
+    end
+
   end
 end
