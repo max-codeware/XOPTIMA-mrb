@@ -27,7 +27,7 @@ module XOPTIMA
   
   ##
   # This module contains some helper routine used during
-  # the file generations. These methods are not intended tp
+  # the file generations. These methods are not intended to
   # be used outside `FileGenerator` class
   module ProblemHelper
 

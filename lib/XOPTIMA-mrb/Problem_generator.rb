@@ -107,23 +107,30 @@ module XOPTIMA
       end
       return b + @mayer
     end 
+
+    # It calculates the bc vector that is the gradient of `B`
+    # w.r.t. the `omegas vector.
+    # The vector is represented as an array
+    def __bc
+      @omegas.map { |omegaj|  @B.diff(omegaj) }
+    end
     
-    # Calculates the derivative of H w.r.t. the states `x`.
+    # It calculates the derivative of `H` w.r.t. the states `x`.
     # It returns a vector as an array
     def __dH_dx
       @states.map { |s| @H.diff(s) }
     end
 
-    # Calculates the derivative of H w.r.t. the controls `u`.
+    # It calculates the derivative of H w.r.t. the controls `u`.
     # It returns a vector as an array
     def __dH_du
       @controls.map { |c| @H.diff(c) }
     end
 
-    # Calculates the derivative of H w.r.t. the parameters `p`.
+    # It calculates the derivative of H w.r.t. the parameters `p`.
     # It returns a vector as an array
-    def __dH_du
-      @controls.map { |p| @H.diff(p) }
+    def __dH_dp
+      @params.map { |p| @H.diff(p) }
     end
 
     ##

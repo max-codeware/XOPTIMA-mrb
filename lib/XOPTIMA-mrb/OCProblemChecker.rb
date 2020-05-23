@@ -26,7 +26,7 @@
 module XOPTIMA
 
   # Helper module to perform the argument checks on the inputs of
-  # a problem
+  # a problem. For internal use only.
   module OCProblemChecker
     class << self
     
