@@ -27,7 +27,7 @@ module XOPTIMA
 
 	##
 	# Lightweight implementation of matrix class for
-	# interbal use. This is to maintain compatibility
+	# internal use. This is to maintain compatibility
 	# with both Ruby and Mruby
   class Matrix 
     def self.identity(d)
@@ -121,8 +121,25 @@ module XOPTIMA
       nil 
     end
 
+    def each_with_index
+      @rows.each_with_index do |row, i|
+        row.each_with_index do |v, j|
+          yield v, i, j 
+        end 
+      end 
+      nil 
+    end
+
     def to_s 
     	"Matrix#{@rows}"
+    end
+
+    def to_sparse(label = nil)
+      sparse_elems = []
+      self.each_with_index do |v, i, j|
+        sparse_elems << [i, j, v] if v != 0
+      end
+      return SparseMatrix.new(rows, columns, sparse_elems, label: label)
     end
 
   private 
@@ -152,5 +169,40 @@ module XOPTIMA
       Matrix.new(r)
     end
 
+  end
+
+  class SparseMatrix
+
+    attr_reader :rows, :cols, :label
+    
+    def initialize(rows, cols, nz, label: nil)
+      @rows  = rows
+      @cols  = cols
+      @label = label 
+      @nz    = nz
+    end
+
+    def each_value
+      @nz.each do |*_, v|
+        yield v 
+      end 
+    end
+
+    def each_value_with_index
+      @nz.each do |i, j, v|
+        yield v, i, j
+      end
+    end
+    
+    def nnz
+      @nz.size 
+    end
+
+    def pattern
+      @nz.map { |nz_cell| nz_cell[0..1] }
+    end
+
+    # def to_erb
+    # end
   end
 end
