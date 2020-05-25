@@ -120,12 +120,22 @@ module XOPTIMA
         assert_dependency_only_on(problem.mayer, :mayer, problem.left, problem.right)
       end
 
+      # It checks the object `a` to be of type `type`
+      # from the parameter `param` of method `met`.
+      # If `strict` is set to true, the class of `a`
+      # is expected to be the one specified in `type`
       def assert(a, type, param, met, strict: false)
         condition = strict ? a.class == type : a.is_a?(type)
         raise TypeError, 
           "Parameter `#{param}' of `#{met}' expets type #{type}, not #{a.class}" unless condition
       end
 
+      # It checks an array to be symbolic or to contain
+      # objects convertible into symbolic ones.
+      #
+      # Arguments:
+      #   * v : Array to check
+      #   * param : name of the parameter taking this object
       def assert_symbolic_array(v, param)
       	begin 
       		Check.ensure_symbolic(v)
@@ -134,6 +144,8 @@ module XOPTIMA
       	end
       end
 
+      # It checks the array `v` of parameter `param` 
+      # to contain only objects of type `type`.
       def assert_array_of(v, type, param)
         v.each do |comp|
           raise TypeError, 
@@ -141,6 +153,12 @@ module XOPTIMA
         end
       end
       
+      # It checks tha hash `h` to contain symbolic keys
+      # and symbolic values, or convertible ones.
+      # If the `states_names` keyword argument is provided, the
+      # keys are checked to be in the list.
+      # This method is used to check the boundary conditions and the
+      # vars used as keys to be the state ones
       def assert_symbolic_hash(h, param, **kw)
         state_names = kw[:state_names]
         h.each do |key, value|
@@ -154,20 +172,35 @@ module XOPTIMA
         end
       end
 
+      # Custom check. An error is raised with
+      # the message `msg` if the provided block returns
+      # a falsey value
       def assert_with_block(msg)
       	raise TypeError, msg unless yield
       end
 
+      # It checks an expression to have dependent vars to
+      # depend only on one of the provided variables in `vars`
+      #
+      # Arguments:
+      #   * exp: symbolic expression
+      #   * met: name of the method calling this check
+      #   * *vars: list of possible variables there could
+      #     be a dependency on 
       def assert_dependency_only_on(exp, met, *vars)
         dvs = exp.dependent_vars
         dvs.each do |dv|
           args = dv.args
-          if args.size != 1 || !vars.include?(args.first)
+          if args.size > 1 || !vars.include?(args.first)
             raise OCPError, "Dependent variables in `#{met}' must depend only on #{vars.join(" or ")}"
           end
         end
       end
 
+      # It attempts to convert object `v` provided
+      # in function parameter `param` of method `m`
+      # to a symbolic one. If the conversion fails,
+      # an error is raised
       def convert_to_symbolic(v, param, m)
         begin 
           return v.symdescfy 
