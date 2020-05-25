@@ -224,15 +224,21 @@ module XOPTIMA
 
       if @verbose
         __display_loaded_problem
-        puts "\nH:   #{@H}"
-        puts "B:   #{@B}"
-        puts "nu:  #{@nu}"
-        puts "eta: #{@eta}\n\n"
-        puts "df/dx: #{@df_dx}\n\n"
-        puts "df/du: #{@df_du}\n\n"
-        puts "df/dp: #{@df_dp}\n\n"
-        puts "P: #{@P}\n"
-        puts "optimizable cb: #{@optimizable_cb.map(&:control).join(", ")}"
+        puts "\nH:   #{@H}",
+          "B:   #{@B}",
+          "nu:  #{@nu}",
+          "eta: #{@eta}\n\n",
+          "df/dx: #{@df_dx}\n\n",
+          "df/du: #{@df_du}\n\n",
+          "df/dp: #{@df_dp}\n\n",
+          "dH/dx: #{@dH_dx}\n\n",
+          "dH/du: #{@dH_du}\n\n",
+          "dH/dp: #{@dH_dp}\n\n",
+          "bc: #{@bc}\n\n",
+          "DadjointBC: #{@DadjointBC}\n\n",
+          "P: #{@P}\n",
+          "optimizable cb: #{@optimizable_cb.map(&:control).join(", ")}\n\n",
+          "states_i_f: #{@states_i_f}\n"
       end
       
       @generator.render_files
