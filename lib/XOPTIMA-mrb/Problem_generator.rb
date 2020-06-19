@@ -114,6 +114,33 @@ module XOPTIMA
     def __bc
       @omegas.map { |omegaj|  @B.diff(omegaj) }
     end
+
+    # It calculates the `g` vector as
+    # ```
+    # d (H + P)
+    # _________
+    #    du
+    # ```
+    def __g
+      h_p = @H + @P
+      return @controls.map { |c|  h_p.diff(c) }
+    end
+
+    ##
+    # It calculates the jump vector as
+    # `[statej[left] - statoj[right], ... , lambdaj[left] - lambdaj[right], ...]`
+    def __jump
+      jump = []
+      states_n = @states.size
+      states_n.times do |j|
+        jump << @states_i_f[j] - @states_i_f[j + states_n]
+      end
+      lambdas_n = @lambdas.size
+      lambdas_n.times do |j|
+        jump << @lambdas_i_f[j] - @lambdas_i_f[j + lambdas_n]
+      end
+      return jump
+    end
     
     # It calculates the derivative of `H` w.r.t. the states `x`.
     # It returns a vector as an array
@@ -155,7 +182,7 @@ module XOPTIMA
     # It calculates the jacobian of the right hand side
     # w.r.t. the parameters.
     def __df_dp
-      __jacobian(@rhs, @parameters)
+      __jacobian(@rhs, @params)
     end
 
     ##
@@ -239,12 +266,25 @@ module XOPTIMA
     end
 
     def __states_i_f
-      states_i_f = []
-      dict       = { @independent => @left}
-      @states.each { |s| states_i_f << s.subs(dict)  }
-      dict       = { @independent => @right}
-      @states.each { |s| states_i_f << s.subs(dict) }
+      states_n   = @states.size
+      states_i_f = Array.new(@states.size * 2)
+      @states.each_with_index do |state, j|
+        name = state.name
+        states_i_f[j] = name[@left]
+        states_i_f[j + states_n] = name[@right]
+      end
       return states_i_f
+    end
+
+    def __lambdas_i_f
+      lambdas_n   = @lambdas.size
+      lambdas_i_f = Array.new(lambdas_n * 2)
+      @lambdas.each_with_index do |lambdaj, j|
+        name = lambdaj.name
+        lambdas_i_f[j] = name[@left]
+        lambdas_i_f[j + lambdas_n] = name[@right]
+      end
+      return lambdas_i_f
     end
 
     #############################################################################
@@ -256,13 +296,58 @@ module XOPTIMA
     #       |_|                                                                 #
     #############################################################################
     
+    def __sparse_mxs
+      @sparse_mxs = [
+        __DgDxlp,
+        __DgDu,
+        __DjumpDxlp,
+        __DbcDx,
+        __DbcDp,
+        __DadjointBCDx,
+        __DadjointBCDp,
+        __DHxDx,
+        __DHxDp,
+        __DHuDx,
+        __DHuDp,
+        __DHpDp,
+        __Drhs_odeDx,
+        __Drhs_odeDp,
+        __Drhs_odeDu,
+        __A_ode,
+        __DetaDx,
+        __DetaDp,
+        __DnuDx,
+        __DnuDp
+      ]
+    end
+
     def __DgDxlp
+      xlp = []
+      @states.each_with_index do |s, j|
+        xlp << s << @lambdas[j]
+      end
+      xlp.concat @params
+      return __jacobian(@g, xlp).to_sparse("DgDxlp")
     end
 
     def __DgDu
+      return __jacobian(@g, @controls).to_sparse("DgDu")
     end
 
     def __DjumpDxlp
+      xlp = []
+      from = 0
+      @states_i_f.each_with_index do |s,j|
+        xlp << s
+        if (j + 1) % 2 == 0
+          (from...(from + @lambdas.size)).each do |i|
+            xlp << @lambdas_i_f[i]
+          end
+          from = j + 1
+        end
+      end
+      xlp.concat @params
+      return __jacobian(@jump, xlp).to_sparse("DjumpDxlp")
     end
 
     def __DbcDx
@@ -274,7 +359,6 @@ module XOPTIMA
     end
 
     def __DadjointBCDx
-
       return __jacobian(@DadjointBC, @states_i_f).to_sparse("DadjointBCDx")
     end
 
