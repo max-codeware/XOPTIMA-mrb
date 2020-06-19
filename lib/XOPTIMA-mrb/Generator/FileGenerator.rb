@@ -37,8 +37,8 @@ module XOPTIMA
 
     include GeneratorHelper
 
-  	def initialize(problem)
-  		@problem = problem
+  	def initialize(ocproblem)
+  		@ocproblem = ocproblem
       Dir.mkdir("OCP_tmp") unless Dir.exist? "OCP_tmp"
   	end
 

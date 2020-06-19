@@ -123,7 +123,7 @@ module XOPTIMA
     end
 
     def render_user_functions_ci(render)
-      [render.render(@problem.mesh)]
+      [render.render(@ocproblem.mesh)]
     end
 
   end
