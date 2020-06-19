@@ -27,84 +27,16 @@ module XOPTIMA
   module GeneratorHelper
 
   	##
-  	# This list contains all the names that appear
-  	# in the `OCPrb` template in the same order without
-  	# duplications. This order must be strictly observed,
-  	# and any modification in the template names must be
-  	# followed by an update of this list
+  	# This list of arguments accepted by the
+    # `OCP.rb' renderer
     OCPNameSet = [
-      :num_thread,
-
-      :max_iter,
-      :max_step_iter,
-      :max_accumulated_iter,
-      :tolerance,
-
-      :states,
-      :lambdas,
-      :controls,
-      :params,
-      :omegas,
-      :post_names,
-      :int_post_names,
-      :independent,
-
-      :bvp_parameters,
-      :guess_parameters,
-      :bc_parameters,
-      :post_processing_parameters,
-      :user_function_parameters,
-      :continuation_parameters,
-      :constraint_parameters,
-
-      :parameters,
-
-      :aux_params,
-
-      :user_functions,
-      :user_map_functions,
-      :user_f_class_i,
-
-      :constraint1D,
-      :constraint2D,
-      :control_bounds,
-      :generic,
-      :initial,
-      :final,
-      :cyclic,
-
-      :q_n_eqns,
-      :controls_size,
-      :jump_n_eqns,
-      :bc_count,
-      :adjointBC_n_eqns,
-      :rhs_size,
-      :dH_dx_size,
-      :dH_du_size,
-      :dH_dp_size,
-      :eta_size,
-      :nu_size,
-      :post_n_eqns,
-      :integrated_post_n_eqns,
-
-      :dudxlp_nr,
-      :dudxlp_nc,
-
-      :x_guess_n_eqns,
-      :l_guess_n_eqns,
-      :p_guess_n_eqns,
-      :node_check_n_eqns,
-      :nodeCheckStrings,
-      :cell_check_n_eqns,
-      :cellCheckStrings,
-      :pars_check_n_eqns,
-      :parsCheckStrings,
-      :u_guess_n_eqns,
-      :u_check_n_eqns,
-      :numContinuationStep,
-      :sparse_mxs
+      :ocp,
+      :user_f_class_i
     ]
 
+    ##
+    # This list of arguments accepted by the
+    # `UserFunctionsCI' renderer
     UserFCINameSet = [
     	:mesh
     ]
