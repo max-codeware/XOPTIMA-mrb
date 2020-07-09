@@ -63,7 +63,7 @@ module XOPTIMA
 
     attr_reader :mesh
 
-    attr_reader :A
+    attr_reader :H
     attr_reader :B
     attr_reader :nu 
     attr_reader :eta 
@@ -74,6 +74,7 @@ module XOPTIMA
     attr_reader :dH_du
     attr_reader :dH_dp
     attr_reader :P
+    attr_reader :g, :jump
 
     attr_reader :sparse_mxs
 
