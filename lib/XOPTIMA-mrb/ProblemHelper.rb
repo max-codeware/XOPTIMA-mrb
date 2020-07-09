@@ -83,5 +83,62 @@ module XOPTIMA
       0
     end
 
+    def substitution_dict
+      dict = {}
+
+      # X__[]
+      @states.each_with_index do |s, i|
+        dict[s] = var :"X__[#{i}]"
+      end
+
+      # XL__[]
+      size = @states_i_f.size
+      @states_i_f[0...-size/2].each_with_index do |sl, i|
+        dict[sl] = var :"XL__[#{i}]"
+      end
+
+      # XR__[]
+      @states_i_f[(size/2)..-1].each_with_index do |sr, i|
+        dict[sr] = var :"XR__[#{i}]"
+      end
+
+      # L__[]
+      @lambdas.each_with_index do |l, i|
+        dict[l] = var :"L__[#{i}]"
+      end
+
+      # LL__[]
+      size = @lambdas_i_f.size
+      @lambdas_i_f[0...-size/2].each_with_index do |ll, i|
+        dict[ll] = var :"LL__[#{i}]"
+      end
+
+      # LR__[]
+      @lambdas_i_f[(size/2)..-1].each_with_index do |lr, i|
+        dict[lr] = var :"LR__[#{i}]"
+      end
+      
+      # U__[]
+      @controls.each_with_index do |c,i|
+        dict[c] = var :"U__[#{i}]"
+      end
+      
+      # OMEGA__[]
+      @omegas.each_with_index do |o, i|
+        dict[o] = var :"OMEGA__[#{i}]"
+      end
+
+      # P__[]
+      @params.each_with_index do |p, i|
+        dict[p] = var :"P__[#{i}]"
+      end
+
+      @nu.each_with_index do |n, i|
+        dict[n] = var :"V__[#{i}]"
+      end
+
+      return dict
+    end
+
   end
 end
