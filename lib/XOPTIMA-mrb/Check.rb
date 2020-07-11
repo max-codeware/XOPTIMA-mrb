@@ -57,6 +57,10 @@ module XOPTIMA
         	end 
         end
       end
+
+      def not_nil(value)
+        raise RuntimeError, "(Nil detected)" if value.nil?
+      end
     end
   end
 end
