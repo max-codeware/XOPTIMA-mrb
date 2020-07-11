@@ -207,7 +207,6 @@ module XOPTIMA
       raise DescriprionError, "Dynamic system not loaded for problem #{@name}" unless @loaded
 
       @states_i_f  = __states_i_f
-      puts @states_i_f.inspect
       
       @mesh = mesh 
 
