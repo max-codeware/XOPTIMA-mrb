@@ -49,6 +49,13 @@ module XOPTIMA
       generate_precalculated
       generate_rhs_ode
       generate_checks
+      generate_H_files
+      generate_targets
+      generate_bc
+      # generate_adjointBC
+      # generate_post
+      # generate_jp
+      # generate_q_u
     end
     
     ##
@@ -78,6 +85,8 @@ module XOPTIMA
       end
     end
     
+    # Generates the files for the expressions generated
+    # in OCProblem
     def generate_precalculated
       write_with_log("eta.c_code") do |io| 
         write_array(@ocproblem.eta, io)
@@ -96,10 +105,12 @@ module XOPTIMA
       end
 
       write_with_log("H_fun.c_code") do |io|
-        io << "result__ = #{@ocproblem.H.subs(@dict)}"
+        io.puts "result__ = #{@ocproblem.H.subs(@dict)}"
       end
     end
 
+    ##
+    # Generates the file for the right-hand side of the ODE
     def generate_rhs_ode
       write_with_log("rhs_ode.c_code") do |io|
         write_array(@ocproblem.rhs, io)
@@ -117,6 +128,11 @@ module XOPTIMA
       end
 
       write_with_log("u_check.c_code") do |io|
+        @ocproblem.control_bounds.each_with_index do |cb,i|
+          cb_x = @dict[cb.control[@ocproblem.independent]]
+          Check.not_nil(cb_x)
+          io.puts "dummy_#{i + 1} = #{cb.label}___dot___check_range(#{cb_x}, #{cb.min.subs(@dict)}, #{cb.max.subs(@dict)})" 
+        end
       end
     end
 
@@ -134,7 +150,76 @@ module XOPTIMA
       end
     end
 
+    def generate_H_files
+      write_with_log("Hp.c_code") do |io|
+        write_array(@ocproblem.dH_dp, io)
+      end
+
+      write_with_log("Hu.c_code") do |io|
+        write_array(@ocproblem.dH_du, io)
+      end
+
+      write_with_log("Hx.c_code") do |io|
+        write_array(@ocproblem.dH_dx, io)
+      end
+    end
+
+    def generate_targets
+      write_with_log("mayer_target.c_code") do |io|
+        io.puts "result__ = #{@ocproblem.mayer.subs(@dict)}"
+      end
+
+      write_with_log("lagrange_target.c_code") do |io|
+        io.puts "result__ = #{@ocproblem.lagrange.subs(@dict)}"
+      end
+    end
+
+    def generate_bc
+      write_with_log("bc.c_code") do |io|
+        i = -1
+        # write_bc(@ocproblem.generic, io) { i += 1 }
+        # write_bc(@ocproblem.initial, io) { i += 1 }
+        # write_bc(@ocproblem.final, io)   { i += 1 }
+        # write_bc(@ocproblem.cyclic, io)  { i += 1 }
+      end
+    end
+
+    def generate_adjointBC
+      write_with_log("adjointBC.c_code") do |io|
+      end
+    end
+
+    def generate_post
+      write_with_log("post.c_code") do |io|
+      end
+
+      write_with_log("integrated_post.c_code") do |io|
+      end
+    end
+
+    def generate_jp
+      write_with_log("Jp_controls.c_code") do |io|
+      end
+
+      write_with_log("Jp_fun.c_code") do |io|
+      end
+    end
+
+    def generate_q_u
+      write_with_log("q.c_code") do |io|
+      end
+
+      write_with_log("u.c_code") do |io|
+      end
+    end
+
   private 
+
+    def write_bc(hash, io)
+      hash.each_value do |value|
+        io.puts "result__[#{yield}] = #{value.subs(@dict)}"
+      end
+    end
 
     def write_array(ary, io)
       ary.each_with_index do |el, i|
