@@ -60,6 +60,7 @@ module XOPTIMA
     attr_reader :lambdas, :omegas
     attr_reader :post_names, :int_post_names
     attr_reader :user_functions, :user_map_functions
+    attr_reader :state_guess
 
     attr_reader :mesh
 
@@ -77,6 +78,7 @@ module XOPTIMA
     attr_reader :g, :jump
 
     attr_reader :sparse_mxs
+    attr_reader :adjointBC
 
 
 
@@ -206,6 +208,7 @@ module XOPTIMA
     def generateOCProblem(parameters: {}, mesh: {}, state_guess: {}, clean: true)
       raise DescriprionError, "Dynamic system not loaded for problem #{@name}" unless @loaded
 
+      @state_guess = state_guess
       @states_i_f  = __states_i_f
       
       @mesh = mesh 
@@ -225,7 +228,8 @@ module XOPTIMA
       @dH_dp = __dH_dp
       @P     = __generate_penalty
       @bc    = __bc
-      @DadjointBC = @states_i_f.map { |xj| @B.diff(xj) }
+
+      @adjointBC = __adjointBC
       @g    = __g 
       @jump = __jump
       __collect_parameters
@@ -244,16 +248,19 @@ module XOPTIMA
           "dH/du: #{@dH_du}\n\n",
           "dH/dp: #{@dH_dp}\n\n",
           "bc: #{@bc}\n\n",
-          "DadjointBC: #{@DadjointBC}\n\n",
+          "DadjointBC: #{@adjointBC}\n\n",
           "g: #{@g}\n\n",
           "jump: #{@jump}\n\n",
           "P: #{@P}\n",
           "optimizable cb: #{@optimizable_cb.map(&:control).join(", ")}\n\n",
           "states_i_f: #{@states_i_f}\n",
-          "lambdas_i_f: #{@lambdas_i_f}\n"
+          "lambdas_i_f: #{@lambdas_i_f}\n\n"
       end
       
       @generator.render_files
+      puts "\nGenerating problem" if @verbose
+      Command.generate_problem
+      puts "Finished!" if @verbose
     end
 
   private
