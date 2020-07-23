@@ -1,5 +1,5 @@
 require "SymDesc"
-require_relative "../lib/XOPTIMA-mrb.rb"
+require_relative "../../lib/XOPTIMA-mrb.rb"
 
 include XOPTIMA
 
