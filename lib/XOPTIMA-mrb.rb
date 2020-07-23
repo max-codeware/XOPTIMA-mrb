@@ -39,7 +39,8 @@ module XOPTIMA
 		"./XOPTIMA-mrb/Generator/FileGenerator.rb",
 		"./XOPTIMA-mrb/Templates/OCP.erb.rb",
 		"./XOPTIMA-mrb/Templates/UserFunctionsCI.erb.rb",
-		"./XOPTIMA-mrb/Overload/SymDesc.rb"
+		"./XOPTIMA-mrb/Overload/SymDesc.rb",
+		"./XOPTIMA-mrb/Command/Command.rb"
 	].each do |file|
     require_relative file
 	end
