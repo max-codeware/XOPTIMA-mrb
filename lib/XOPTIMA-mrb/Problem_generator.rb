@@ -133,13 +133,37 @@ module XOPTIMA
       jump = []
       states_n = @states.size
       states_n.times do |j|
-        jump << @states_i_f[j] - @states_i_f[j + states_n]
+        jump << @states_i_f[j + states_n] - @states_i_f[j]
       end
       lambdas_n = @lambdas.size
       lambdas_n.times do |j|
-        jump << @lambdas_i_f[j] - @lambdas_i_f[j + lambdas_n]
+        jump << @lambdas_i_f[j + lambdas_n] - @lambdas_i_f[j]
       end
       return jump
+    end
+
+    def __adjointBC
+      dict1 = {}
+      dict2 = {}
+      states_i = @states_i_f[0...@states.size]
+      states_f = @states_i_f[@states.size..-1]
+
+      states.each_with_index do |s, i|
+        dict1[s] = states_i[i]
+        dict2[s] = states_f[i]
+      end
+
+      size = @lambdas.size
+      @lambdas.each_with_index do |l, i|
+        dict1[l] = @lambdas_i_f[i]
+        dict2[l] = @lambdas_i_f[i + size]
+      end
+
+      puts dict1, dict2
+
+      pc1 = states_i.each_with_index.map { |xj, i| (@B.diff(xj) + @eta[i]).subs(dict1)}
+      pc2 = states_f.each_with_index.map { |xj, i| (@B.diff(xj) - @eta[i]).subs(dict2)}
+      return pc1.concat pc2
     end
     
     # It calculates the derivative of `H` w.r.t. the states `x`.
@@ -359,11 +383,11 @@ module XOPTIMA
     end
 
     def __DadjointBCDx
-      return __jacobian(@DadjointBC, @states_i_f).to_sparse("DadjointBCDx")
+      return __jacobian(@adjointBC, @states_i_f).to_sparse("DadjointBCDx")
     end
 
     def __DadjointBCDp
-      return __jacobian(@DadjointBC, @params).to_sparse("DadjointBCDp")
+      return __jacobian(@adjointBC, @params).to_sparse("DadjointBCDp")
     end
 
     def __DHxDx
