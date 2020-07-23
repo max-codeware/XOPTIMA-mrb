@@ -49,13 +49,15 @@ module XOPTIMA
       generate_precalculated
       generate_rhs_ode
       generate_checks
+      generate_guess
       generate_H_files
       generate_targets
       generate_bc
-      # generate_adjointBC
-      # generate_post
-      # generate_jp
-      # generate_q_u
+      generate_adjointBC
+      generate_post
+      generate_jp
+      generate_q_u
+      generate_DuDxlp
     end
     
     ##
@@ -105,7 +107,7 @@ module XOPTIMA
       end
 
       write_with_log("H_fun.c_code") do |io|
-        io.puts "result__ = #{@ocproblem.H.subs(@dict)}"
+        io.puts "result__ = #{@ocproblem.H.subs(@dict)};"
       end
     end
 
@@ -131,7 +133,7 @@ module XOPTIMA
         @ocproblem.control_bounds.each_with_index do |cb,i|
           cb_x = @dict[cb.control[@ocproblem.independent]]
           Check.not_nil(cb_x)
-          io.puts "dummy_#{i + 1} = #{cb.label}___dot___check_range(#{cb_x}, #{cb.min.subs(@dict)}, #{cb.max.subs(@dict)})" 
+          io.puts "dummy_#{i + 1} = #{cb.label}___dot___check_range(#{cb_x}, #{cb.min.subs(@dict)}, #{cb.max.subs(@dict)});" 
         end
       end
     end
@@ -141,9 +143,18 @@ module XOPTIMA
       end
 
       write_with_log("u_guess.c_code") do |io|
+        # TODO: temporary workaround. Needs to be implemented
+        io.puts "result[0] = 0;"
       end
 
       write_with_log("x_guess.c_code") do |io|
+        io.puts "t1 = Q__[0];"
+        states = @ocproblem.states
+        dict   = {@ocproblem.independent => var(:t1)}
+        @ocproblem.state_guess.each do |s, g|
+          index = states.index { |state| state.name == s }
+          io.puts "result__[#{index}] = #{g.subs(@dict).subs(dict)};"
+        end
       end
 
       write_with_log("p_guess.c_code") do |io|
@@ -166,26 +177,34 @@ module XOPTIMA
 
     def generate_targets
       write_with_log("mayer_target.c_code") do |io|
-        io.puts "result__ = #{@ocproblem.mayer.subs(@dict)}"
+        io.puts "result__ = #{@ocproblem.mayer.subs(@dict)};"
       end
 
       write_with_log("lagrange_target.c_code") do |io|
-        io.puts "result__ = #{@ocproblem.lagrange.subs(@dict)}"
+        io.puts "result__ = #{@ocproblem.lagrange.subs(@dict)};"
       end
     end
 
     def generate_bc
       write_with_log("bc.c_code") do |io|
         i = -1
-        # write_bc(@ocproblem.generic, io) { i += 1 }
-        # write_bc(@ocproblem.initial, io) { i += 1 }
-        # write_bc(@ocproblem.final, io)   { i += 1 }
-        # write_bc(@ocproblem.cyclic, io)  { i += 1 }
+        @ocproblem.final.each do |k, v|
+          exp = k[@ocproblem.right] - v 
+          io.puts "result__[#{i += 1}] = #{exp.subs(@dict)};"
+        end
+        
+        @ocproblem.initial.each do |k, v|
+          exp = k[@ocproblem.left] - v 
+          io.puts "result__[#{i += 1}] = #{exp.subs(@dict)};"
+        end
+        # @ocproblem.cyclic.each
+        # @ocproblem.generic.each
       end
     end
 
     def generate_adjointBC
       write_with_log("adjointBC.c_code") do |io|
+        write_array(@ocproblem.adjointBC, io)
       end
     end
 
@@ -199,31 +218,39 @@ module XOPTIMA
 
     def generate_jp
       write_with_log("Jp_controls.c_code") do |io|
+        io.puts "result__ = #{@ocproblem.P.subs(@dict)};"
       end
 
       write_with_log("Jp_fun.c_code") do |io|
+        # TODO: this part must be implemented
+        io.puts "result__ = 0;"
       end
     end
 
     def generate_q_u
       write_with_log("q.c_code") do |io|
+        io.puts "result__[0] = s;"
       end
 
       write_with_log("u.c_code") do |io|
+        io.puts "// Solver not implemented in Ruby"
+        @ocproblem.controls.each_with_index do |c, i|
+          io.puts "result__[#{i}] = 0;"
+        end
+      end
+    end
+
+    def generate_DuDxlp
+      write_with_log("DuDxlp") do |io|
+        io.puts "LW_ERROR0(\"DuDxlp not defined\");"
       end
     end
 
   private 
 
-    def write_bc(hash, io)
-      hash.each_value do |value|
-        io.puts "result__[#{yield}] = #{value.subs(@dict)}"
-      end
-    end
-
     def write_array(ary, io)
       ary.each_with_index do |el, i|
-        io.puts "result__[#{i}] = #{el.subs(@dict)}"
+        io.puts "result__[#{i}] = #{el.subs(@dict)};"
       end 
     end
 
@@ -231,7 +258,7 @@ module XOPTIMA
       write_with_log(name) do |io| 
         i = -1
         mx.each_value do |v|
-          io.puts "result__[#{i += 1}] = #{v.subs(dict)}"
+          io.puts "result__[#{i += 1}] = #{v.subs(dict)};"
         end
       end
     end
