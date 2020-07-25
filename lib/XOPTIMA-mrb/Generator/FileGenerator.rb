@@ -37,11 +37,17 @@ module XOPTIMA
 
     include GeneratorHelper
 
-  	def initialize(ocproblem)
+  	# It initializes the instance saving the `ocproblem`
+    # description passes as argument.
+    # It also creates a directory named `OCP_tmp` where all
+    # the generated files are placed.
+    def initialize(ocproblem)
   		@ocproblem = ocproblem
       Dir.mkdir("OCP_tmp") unless Dir.exist? "OCP_tmp"
   	end
 
+    # Generic method that calls all the subroutines for the full
+    # generation of the problem files
     def render_files
       @dict = @ocproblem.substitution_dict
       generate_ocp_rb
@@ -61,7 +67,7 @@ module XOPTIMA
     end
     
     ##
-    # Renders and generates the file `OCP.rb`
+    # It renders and generates the file `OCP.rb`
     def generate_ocp_rb
       log_report("OCP.rb") do
       
@@ -80,15 +86,20 @@ module XOPTIMA
     end
 
     ##
-    # Generates all the files of the sparse matrices
+    # It generates all the files of the sparse matrices
     def generate_sparse_mx_files
       @ocproblem.sparse_mxs.each do |mx|
         write_matrix("#{mx.label}.c_code", mx, @dict)
       end
     end
     
-    # Generates the files for the expressions generated
-    # in OCProblem
+    # it Generates the files for the expressions generated
+    # in OCProblem. In particular:
+    #   * eta
+    #   * g
+    #   + jump
+    #   * nu
+    #   * H
     def generate_precalculated
       write_with_log("eta.c_code") do |io| 
         write_array(@ocproblem.eta, io)
@@ -112,13 +123,15 @@ module XOPTIMA
     end
 
     ##
-    # Generates the file for the right-hand side of the ODE
+    # It generates the file for the right-hand side of the ODE
     def generate_rhs_ode
       write_with_log("rhs_ode.c_code") do |io|
         write_array(@ocproblem.rhs, io)
       end
     end
 
+    ##
+    # It generates the files for checks
     def generate_checks
       write_with_log("cell_check.c_code") do |io|
       end
@@ -138,6 +151,8 @@ module XOPTIMA
       end
     end
 
+    ##
+    # It generates the files for guesses
     def generate_guess
       write_with_log("l_guess.c_code") do |io|
       end
@@ -147,6 +162,11 @@ module XOPTIMA
         io.puts "result[0] = 0;"
       end
 
+      # This file is generated renaming the independent variable as `t1`
+      # and assigning to it the value of `Q__[0]`.
+      # Then, it is substituted into the expression after the
+      # dictionary for code generation (we want to subs only the remaining
+      # independent variable stated as free one)
       write_with_log("x_guess.c_code") do |io|
         io.puts "t1 = Q__[0];"
         states = @ocproblem.states
@@ -161,6 +181,11 @@ module XOPTIMA
       end
     end
 
+    ##
+    # It generates three files coding:
+    #   * dH/dp
+    #   * dh/du
+    #   * dH/dx
     def generate_H_files
       write_with_log("Hp.c_code") do |io|
         write_array(@ocproblem.dH_dp, io)
@@ -175,6 +200,9 @@ module XOPTIMA
       end
     end
 
+    ##
+    # It generates the files for the lagrange and
+    # mayer targets
     def generate_targets
       write_with_log("mayer_target.c_code") do |io|
         io.puts "result__ = #{@ocproblem.mayer.subs(@dict)};"
@@ -185,6 +213,9 @@ module XOPTIMA
       end
     end
 
+    ##
+    # It generates the `bc` file where the
+    # boundary conditions are coded
     def generate_bc
       write_with_log("bc.c_code") do |io|
         i = -1
@@ -202,12 +233,17 @@ module XOPTIMA
       end
     end
 
+    ##
+    # It generates the `adjointBC` file
     def generate_adjointBC
       write_with_log("adjointBC.c_code") do |io|
         write_array(@ocproblem.adjointBC, io)
       end
     end
 
+    ##
+    # It generates the `post` and integrated_post`
+    # files
     def generate_post
       write_with_log("post.c_code") do |io|
       end
@@ -216,6 +252,9 @@ module XOPTIMA
       end
     end
 
+    ##
+    # It generates the `Jp_controls` and `Jp_fun`
+    # files
     def generate_jp
       write_with_log("Jp_controls.c_code") do |io|
         io.puts "result__ = #{@ocproblem.P.subs(@dict)};"
@@ -227,6 +266,8 @@ module XOPTIMA
       end
     end
 
+    ##
+    # It generates the `q` and `u` file
     def generate_q_u
       write_with_log("q.c_code") do |io|
         io.puts "result__[0] = s;"
@@ -240,6 +281,8 @@ module XOPTIMA
       end
     end
 
+    ##
+    # It generates the `DuDxlp` file
     def generate_DuDxlp
       write_with_log("DuDxlp.c_code") do |io|
         io.puts "LW_ERROR0(\"DuDxlp not defined\");"
@@ -248,12 +291,18 @@ module XOPTIMA
 
   private 
 
+    ##
+    # It writes a vector saved as an array as 
+    # `result__[j] = compj` into the given `io`
     def write_array(ary, io)
       ary.each_with_index do |el, i|
         io.puts "result__[#{i}] = #{el.subs(@dict)};"
       end 
     end
 
+    ##
+    # It writes the non-zero components of a sparse matrix as 
+    # `result__[j] = compj` into the given `io`
     def write_matrix(name, mx, dict)
       write_with_log(name) do |io| 
         i = -1
@@ -263,12 +312,19 @@ module XOPTIMA
       end
     end
 
+    ##
+    # It creates a file with the given name passing the
+    # `io` buffer to the given block and printing a log message
+    # to the console
     def write_with_log(name)
       log_report(name) do
         open("OCP_tmp/#{name}", "w") { |io| yield io }
       end
     end
 
+    ##
+    # It prints a log message to the console before executing the
+    # given block and after. This is used for debug purposes
     def log_report(file)
       print "Rendering `#{file}'..." if @ocproblem.verbose
       yield
