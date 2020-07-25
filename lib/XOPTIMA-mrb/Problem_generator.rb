@@ -159,8 +159,6 @@ module XOPTIMA
         dict2[l] = @lambdas_i_f[i + size]
       end
 
-      puts dict1, dict2
-
       pc1 = states_i.each_with_index.map { |xj, i| (@B.diff(xj) + @eta[i]).subs(dict1)}
       pc2 = states_f.each_with_index.map { |xj, i| (@B.diff(xj) - @eta[i]).subs(dict2)}
       return pc1.concat pc2
@@ -359,18 +357,13 @@ module XOPTIMA
     end
 
     def __DjumpDxlp
-      xlp = []
-      from = 0
-      @states_i_f.each_with_index do |s,j|
-        xlp << s
-        if (j + 1) % 2 == 0
-          (from...(from + @lambdas.size)).each do |i|
-            xlp << @lambdas_i_f[i]
-          end
-          from = j + 1
-        end
-      end
-      xlp.concat @params
+      s_size = @states.size
+      l_size = @lambdas.size
+      xlp = @states_i_f[0...s_size].concat(
+        @lambdas_i_f[0...l_size],
+        @states_i_f[s_size..-1],
+        @lambdas_i_f[l_size..-1]
+      )
       return __jacobian(@jump, xlp).to_sparse("DjumpDxlp")
     end
 

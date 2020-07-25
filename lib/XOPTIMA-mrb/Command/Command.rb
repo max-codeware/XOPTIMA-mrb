@@ -27,10 +27,14 @@ module XOPTIMA
 	module Command
 		class CommandError < RuntimeError; end
 
-    def self.generate_problem
+    def self.generate_problem(name, clean)
       #Dir.chdir("./OCP_tmp")
-      cmd = "pins /Library/Frameworks/Maple.framework/Versions/Current/toolbox/XOptima/XOptima_GenerateCppCode_OCP.rb BangBang --output_directory=./"
+      cmd = "pins /Library/Frameworks/Maple.framework/Versions/Current/toolbox/XOptima/XOptima_GenerateCppCode_OCP.rb #{name} --output_directory=./"
       if !system(cmd)
+      	raise CommandError, $?
+      end
+
+      if clean && !system("rm -r ./OCP_tmp")
       	raise CommandError, $?
       end
     end

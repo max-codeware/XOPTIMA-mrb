@@ -39,7 +39,7 @@ problem.loadDynamicSystem(rhs: rhs, states: state_vars, controls: cvars, indepen
 problem.addBoundaryConditions(initial: {x => 0, v => 0}, final: {v => 0})
 
 # Constraints on control
-problem.addControlBound(f, controlType: "U_COS_LOGARITHMIC", maxabs: 1)
+problem.addControlBound(f, controlType: "COS_LOGARITHMIC", maxabs: 1)
 
 # Cost function: target
 problem.setTarget(mayer: -x[t_f])

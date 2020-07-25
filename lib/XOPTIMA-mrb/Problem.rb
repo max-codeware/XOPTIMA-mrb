@@ -248,7 +248,7 @@ module XOPTIMA
           "dH/du: #{@dH_du}\n\n",
           "dH/dp: #{@dH_dp}\n\n",
           "bc: #{@bc}\n\n",
-          "DadjointBC: #{@adjointBC}\n\n",
+          "adjointBC: #{@adjointBC}\n\n",
           "g: #{@g}\n\n",
           "jump: #{@jump}\n\n",
           "P: #{@P}\n",
@@ -259,7 +259,7 @@ module XOPTIMA
       
       @generator.render_files
       puts "\nGenerating problem" if @verbose
-      Command.generate_problem
+      Command.generate_problem(@name, clean)
       puts "Finished!" if @verbose
     end
 

@@ -50,7 +50,8 @@ class COMMON_Build
   DATA[:OMEGAvars]    = <%=ocp.omegas.map(&:to_s)%>
   DATA[:POSTnames]    = <%=ocp.post_names%>
   DATA[:INTPOSTnames] = <%=ocp.int_post_names%>
-  DATA[:Qvars]        = "<%=ocp.independent%>"
+  DATA[:Qvars]        = ["<%=ocp.independent%>"] # To fix with independent of OCProblem
+  DATA[:control_iterative] = true
 
   #--------------------------
   DATA[:bvp_parameters]             = <%=ocp.bvp_parameters%>
@@ -99,28 +100,28 @@ class COMMON_Build
     {
       :name  => "initial_<%=name%>",
       :name1 => "initial_<%=name%>",
-      :value => "<%=value%>"
+      :value => "1"
     },
   <% end %>\
   <% for name, value in ocp.initial%>
     {
       :name  => "initial_<%=name%>",
       :name1 => "initial_<%=name%>",
-      :value => "<%=value%>"
+      :value => "1"
     },
   <% end %>\
   <% for name, value in ocp.final%>
     {
       :name  => "final_<%=name%>",
       :name1 => "final_<%=name%>",
-      :value => "<%=value%>"
+      :value => "1"
     },
   <% end %>\
   <% for name, value in ocp.cyclic%>
     {
       :name  => "initial_<%=name%>",
       :name1 => "initial_<%=name%>",
-      :value => "<%=value%>"
+      :value => "1"
     },
   <% end %>
   ]
@@ -186,14 +187,14 @@ class COMMON_Build
   <% end %>
   ]
 
-end
-
+  
 <% for sparse_mx in ocp.sparse_mxs %>
-  $SparseMatrix_<%=sparse_mx.label%> = {
+  DATA[:<%=sparse_mx.label%>] = {
     :n_rows  => <%=sparse_mx.rows%>,
     :n_cols  => <%=sparse_mx.cols%>,
     :nnz     => <%=sparse_mx.nnz%>,
     :pattern => <%=sparse_mx.pattern%>
   }
 <% end %>
+end
 T
