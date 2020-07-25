@@ -199,13 +199,16 @@ module XOPTIMA
       @control_bounds << cb
     end
 
+    def mapUserFunctionToRegularized(*argv, **kwargs)
+    end
+
     def setTarget(lagrange: 0, mayer: 0)
       @lagrange = OCProblemChecker.convert_to_symbolic(lagrange, :lagrange, :setTarget)
       @mayer    = OCProblemChecker.convert_to_symbolic(mayer, :mayer, :setTarget)
       OCProblemChecker.check_target(self)
     end
 
-    def generateOCProblem(parameters: {}, mesh: {}, state_guess: {}, clean: true)
+    def generateOCProblem(parameters: {}, mesh: {}, state_guess: {}, post_processing: [], clean: true)
       raise DescriprionError, "Dynamic system not loaded for problem #{@name}" unless @loaded
 
       @state_guess = state_guess
