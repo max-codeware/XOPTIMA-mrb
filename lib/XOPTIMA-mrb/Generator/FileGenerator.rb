@@ -241,7 +241,7 @@ module XOPTIMA
     end
 
     def generate_DuDxlp
-      write_with_log("DuDxlp") do |io|
+      write_with_log("DuDxlp.c_code") do |io|
         io.puts "LW_ERROR0(\"DuDxlp not defined\");"
       end
     end
