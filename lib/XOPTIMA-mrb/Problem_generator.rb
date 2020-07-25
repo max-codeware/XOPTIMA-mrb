@@ -142,6 +142,7 @@ module XOPTIMA
       return jump
     end
 
+    # It calculates the adjointBC vector
     def __adjointBC
       dict1 = {}
       dict2 = {}
@@ -287,6 +288,10 @@ module XOPTIMA
       @parameters
     end
 
+    # It creates a vector cointaining, in the order, the states
+    # calculated in `zeta_i` and the states calculated in `zeta_f`.
+    # `zeta` is the independent variable specified in the problem 
+    # description.
     def __states_i_f
       states_n   = @states.size
       states_i_f = Array.new(@states.size * 2)
@@ -298,6 +303,10 @@ module XOPTIMA
       return states_i_f
     end
 
+    # It creates a vector cointaining, in the order, the lambdas
+    # calculated in `zeta_i` and the lambdas calculated in `zeta_f`.
+    # `zeta` is the independent variable specified in the problem 
+    # description.
     def __lambdas_i_f
       lambdas_n   = @lambdas.size
       lambdas_i_f = Array.new(lambdas_n * 2)

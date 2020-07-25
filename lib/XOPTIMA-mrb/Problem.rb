@@ -199,16 +199,77 @@ module XOPTIMA
       @control_bounds << cb
     end
 
-    def mapUserFunctionToRegularized(*argv, **kwargs)
+    # Map a user defined function with a known regularized function that is 
+    # registered.
+    # 
+    # Known regularized function are function available in the Machatronix 
+    # library.
+    # 
+    # The parameters are optional and must be the ones specified for each 
+    # class.
+    # 
+    # The command calling sequence has some options below described:
+    # 
+    # Arguments:
+    #  * func_name: name of function to be mapped
+    # 
+    #  * class: name of the class of regularized function
+    # 
+    #  * pars: hash of parameters equal to initial value for class set up. Es. {h => 1, epsilon => 2}
+    # 
+    def mapUserFunctionToRegularized(func_name, class, pars: {})
     end
 
+    # Bolza formulation defines both Mayer and Lagrange targets of the Optimal 
+    # Control Problem.
+    # Mayer term is the scalar term in the OCP formulation.
+    # Mayer term must depend on zeta independent variable calculated on initial 
+    # and/or final boundary
+    # (i.e. zeta_i or/and zeta_f)
+    # .
+    # Lagrange term is the integral target of the Optimal Control Problem and 
+    # must depend on zeta independent variable
+    # 
+    # Arguments:
+    #  * mayer: algebraic expression of mayer term
+    #  * lagrange: algebraic expression of lagrange term
+    # 
     def setTarget(lagrange: 0, mayer: 0)
       @lagrange = OCProblemChecker.convert_to_symbolic(lagrange, :lagrange, :setTarget)
       @mayer    = OCProblemChecker.convert_to_symbolic(mayer, :mayer, :setTarget)
       OCProblemChecker.check_target(self)
     end
 
-    def generateOCProblem(parameters: {}, mesh: {}, state_guess: {}, post_processing: [], clean: true)
+    # The command generates the C++ files that are necessary to solve the 
+    # Optimal Control Problem.
+    # The command is based on a Ruby script that parse the Maple generated code 
+    # and applies the necessary transformations
+    # suitable for the Xoptima library.
+    # 
+    # Arguments:
+    #  * language = {C++(default)}
+    #  * controls_iterative = {true,false}, if the iterative solution of the 
+    #  control has to be used.
+    #  This is necessary for some problems when controls cannot be solved 
+    #  explicitly. For now this parameter is set to true.
+    # 
+    # It generates the C code of the discretized BVP defined by generateBVP() 
+    # command.
+    # The command also extracts the constant parameters and automatically 
+    # reoders the list of expressions provided with the addDefaultParameters() command
+    # The reordering is necessary to build a consistent input file that 
+    # evaluates the parameter assigments in the correct sequence.
+    # 
+    # Arguments:
+    #  * codegenOptions = list of option to pass to CodeGeneration
+    def generateOCProblem(language:           "C++", 
+                          controls_iterative: true, 
+                          parameters:         {}, 
+                          mesh:               {}, 
+                          state_guess:        {}, 
+                          post_processing:    [], 
+                          clean:              true,
+                          codegenOptions:     [])
       raise DescriprionError, "Dynamic system not loaded for problem #{@name}" unless @loaded
 
       @state_guess = state_guess

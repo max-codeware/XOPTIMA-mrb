@@ -30,19 +30,34 @@ module XOPTIMA
 	# internal use. This is to maintain compatibility
 	# with both Ruby and Mruby
   class Matrix 
+    
+    ##
+    # It creates an identity matrix of the given size
     def self.identity(d)
     	rows = Array.new(d) { |i| Array.new(d) { |j| i == j ? 1 : 0} }
       new rows
     end
 
+    ##
+    # It creates an empty matrix but recording the dimensions
     def self.empty(r,c)
       new [], r, c 
     end
 
+    ##
+    # Same as new([[], ..]), but just pass the rows as
+    # parameter
     def self.[](*rows)
       new rows
     end
 
+    ##
+    # It creates a new matrix.
+    #
+    # Parameters:
+    #  * rows: array of arrays containing the matrix saved as row magnitude
+    #  * r: number of rows. This is used only if the matrix is empty
+    #  * c: number of columns. This is used only if the matrix is empty
     def initialize(rows, r = nil, c = nil)
       raise ArgumentError, "Expected array, but #{rows} found" unless rows.is_a? Array
       rows.each do |r|
@@ -64,14 +79,21 @@ module XOPTIMA
       Check.ensure_symbolic self
     end
 
+    ##
+    # It returns the number of rows
     def rows 
       @r
     end
 
+    ##
+    # It returns the number of columns
     def columns 
       @c
     end
 
+    ##
+    # It performs the matrix product between this matrix and
+    # another one or a vector (saved as a simple array)
     def *(b)
       Check.ensure_symbolic b
       Check.matrix_product self, b
@@ -86,10 +108,13 @@ module XOPTIMA
     end
     
 
+    ##
+    # It access the (i, j)th element of the matrix
     def [](i,j)
       return @rows[i][j]
     end
 
+    # It transposes the matrix
     def transpose
       return Matrix.new @rows.transpose
     end
@@ -134,6 +159,9 @@ module XOPTIMA
     	"Matrix#{@rows}"
     end
 
+    ##
+    # It converts this matrix to a sparse one using
+    # the `SparseMatrix` class
     def to_sparse(label = nil)
       sparse_elems = []
       self.each_with_index do |v, i, j|
@@ -171,10 +199,21 @@ module XOPTIMA
 
   end
 
+  ##
+  # This class represents a sparse representation of a matrix.
+  # This is an ad-hoc representation for this library.
+  # The non-zero elements are saven in an array as a vector
+  # containing, in the order, the row, the column and the value.
   class SparseMatrix
 
     attr_reader :rows, :cols, :label
     
+    ##
+    # Parameters:
+    #   * rows: number of rows of the sparse matrix
+    #   * cols: number of columns of the sparse matrix
+    #   * nz:   array with the non-zero elements representation
+    #   * label: name given to this matrix (used in file generation)
     def initialize(rows, cols, nz, label: nil)
       @rows  = rows
       @cols  = cols
@@ -188,16 +227,26 @@ module XOPTIMA
       end 
     end
 
+    ##
+    # It iterates over the elements passing to the given
+    # block:
+    #  * row number
+    #  * column number
+    #  * value
     def each_value_with_index
       @nz.each do |i, j, v|
         yield v, i, j
       end
     end
     
+    ##
+    # It returns the number of non-zero elements
     def nnz
       @nz.size 
     end
 
+    ##
+    # It returns the pattern of the non-zero elements
     def pattern
       @nz.map { |nz_cell| nz_cell[0..1] }
     end

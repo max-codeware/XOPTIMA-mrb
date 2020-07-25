@@ -24,6 +24,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 module XOPTIMA
+
+  # This module handles the commands passed to the command line to
+  # trigger `pins` commands for file generation.
 	module Command
 		class CommandError < RuntimeError; end
 

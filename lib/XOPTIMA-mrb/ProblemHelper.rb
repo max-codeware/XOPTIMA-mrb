@@ -67,6 +67,7 @@ module XOPTIMA
     	[]
     end
 
+    # It returns the number of declared boundary conditions
     def bc_count
     	@generic.size + @initial.size + @final.size + @cyclic.size
     end
@@ -83,6 +84,19 @@ module XOPTIMA
       0
     end
 
+    # This routine creates a dictionary used to convert the symbolic
+    # expressions from the math form to the code (C++) form.
+    # The substitutions generated are:
+    #   * xj(t)   -> X__[j]
+    #   * xj(t_i) -> XL__[j]
+    #   * xj(t_f) -> XR__[j]
+    #   * lambdaj(t)   -> L__[j]
+    #   * lambdaj(t_i) -> LL__[j]
+    #   * lambdaj(t_f) -> LR__[j]
+    #   * uj(t)  -> U__[j]
+    #   * omegaj -> OMEGA__[j]
+    #   * paramj -> P__[j]
+    #   * nu[j]  -> V__[j]
     def substitution_dict
       dict = {}
 
@@ -133,6 +147,7 @@ module XOPTIMA
         dict[p] = var :"P__[#{i}]"
       end
 
+      # V__[]
       @nu.each_with_index do |n, i|
         dict[n] = var :"V__[#{i}]"
       end
