@@ -40,7 +40,8 @@ module XOPTIMA
 		"./XOPTIMA-mrb/Templates/OCP.erb.rb",
 		"./XOPTIMA-mrb/Templates/UserFunctionsCI.erb.rb",
 		"./XOPTIMA-mrb/Overload/SymDesc.rb",
-		"./XOPTIMA-mrb/Command/Command.rb"
+		"./XOPTIMA-mrb/Command/Command.rb",
+		"./XOPTIMA-mrb/RegFunctions/RegularizedFunctions.rb"
 	].each do |file|
     require_relative file
 	end

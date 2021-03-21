@@ -33,3 +33,13 @@ class SymDesc::Differential
     io ? io : (_io.close; _io.string)
   end
 end
+
+class SymDesc::Power
+  alias  :to_s_ :to_s
+
+  def to_s(io = nil)
+  	_io = io || __new_io(get_size + 6)
+    __io_append(_io, "pow(", @left, ",", @right, RPAR)
+    io ? io : (_io.close; _io.string)
+  end
+end

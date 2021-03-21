@@ -63,14 +63,41 @@ class COMMON_Build
   DATA[:constraint_parameters]      = <%=ocp.constraint_parameters%>
 
   #--------------------------
-  DATA[:ModelParameters] = <%=ocp.parameters%>
+  DATA[:ModelParameters] = [
+  <% for param in ocp.parameters %>\
+    {
+      :C_value => "<%=param%>",
+      :name    => "<%=param%>",
+      :value   => "<%=param%>"
+    }, 
+  <% end %>
+  ]
 
   #--------------------------
-  DATA[:AuxiliaryParameters] = <%=ocp.aux_params%>
+  DATA[:AuxiliaryParameters] = [
+  <% for param, val in ocp.aux_params %>\
+    {
+      :C_value => "<%=val%>",
+      :name    => "<%=param%>",
+      :value   => "<%=val%>"
+    }, 
+  <% end %>
+  ]
 
   #--------------------------
   DATA[:UserFunctions]    = <%=ocp.user_functions%>
-  DATA[:UserMapFunctions] = <%=ocp.user_map_functions%>
+  DATA[:UserMapFunctions] = [
+  <% for umap_fun in ocp.user_map_functions %>
+    {
+      :par_h => "<%=umap_fun.par_h%>",
+      :class => "<%=umap_fun.klass%>",
+      :namepars => <%=umap_fun.namepars%>,
+      :func     => "<%=umap_fun.func%>",
+      :args     => <%=umap_fun.args%>,
+      :par_deltta => "<%=umap_fun.par_delta%>"
+    },
+  <% end %>
+  ]
   DATA[:UserFunctionsClassInstances] = [
   <% for ufci in user_f_class_i %>
     <%=ufci%>\
@@ -125,10 +152,17 @@ class COMMON_Build
     },
   <% end %>
   ]
+  DATA[:DFH]                    = []
   DATA[:q_n_eqns]               = <%=ocp.q_n_eqns%>
   DATA[:u_n_eqns]               = <%=controls_n%>
   DATA[:g_n_eqns]               = <%=controls_n%>
   DATA[:jump_n_eqns]            = <%=2 * states_n%>
+  DATA[:DmayerDx_n_eqns]        = <%=2 * states_n%>
+  DATA[:DmayerDp_n_eqns]        = <%=ocp.params.size%>
+  DATA[:DmDu_n_eqns]            = <%=ocp.controls.size%>
+  DATA[:DJDx_n_eqns]            = <%=states_n%>
+  DATA[:DJDp_n_eqns]            = <%=ocp.params.size%>
+  DATA[:DJDu_n_eqns]            = <%=ocp.controls.size%>
   DATA[:bc_n_eqns]              = <%=ocp.bc_count%>
   DATA[:adjointBC_n_eqns]       = <%=2 * states_n%>
   DATA[:rhs_ode_n_eqns]         = <%=ocp.rhs.size%>
@@ -145,23 +179,26 @@ class COMMON_Build
     :n_cols  => <%=2 * states_n + (ocp.params.size)%>,
   }
 
-  DATA[:x_guess_n_eqns]    = <%=states_n%>
-  DATA[:l_guess_n_eqns]    = <%=states_n%> 
-  DATA[:p_guess_n_eqns]    = <%=ocp.params.size%>
-  DATA[:node_check_n_eqns] = <%=0%>
-  DATA[:NodeCheckStrings]  = <%=[]%>
-  DATA[:cell_check_n_eqns] = <%=0%>
-  DATA[:CellCheckStrings]  = <%=[]%>
-  DATA[:pars_check_n_eqns] = <%=0%>
-  DATA[:ParsCheckStrings]  = <%=[]%>
-  DATA[:u_guess_n_eqns]    = <%=controls_n%>
-  DATA[:u_check_n_eqns]    = <%=controls_n%>
+  DATA[:x_guess_n_eqns]        = <%=states_n%>
+  DATA[:l_guess_n_eqns]        = <%=states_n%> 
+  DATA[:p_guess_n_eqns]        = <%=ocp.params.size%>
+  DATA[:node_check_n_eqns]     = <%=0%>
+  DATA[:node_check_strings]    = <%=[]%>
+  DATA[:cell_check_n_eqns]     = <%=0%>
+  DATA[:cell_check_strings]    = <%=[]%>
+  DATA[:pars_check_n_eqns]     = <%=0%>
+  DATA[:pars_check_strings]    = <%=[]%>
+  DATA[:params_check_n_eqns]   = <%=0%>
+  DATA[:params_check_strings]  = <%=[]%>
+  DATA[:u_guess_n_eqns]        = <%=controls_n%>
+  DATA[:u_check_n_eqns]        = <%=controls_n%>
 
   DATA[:NumContinuationStep] = <%=0%>
 
+  <%list = ocp.user_map_functions + ocp.control_bounds%>\
   #--------------------------(ALIAS)
   DATA[:alias] = [\
-  <% for cb in ocp.control_bounds%>
+  <% for cb in list%>
     "#define ALIAS_<%=cb.label%>_D_3(__t1, __t2, __t3) <%=cb.label%>.D_3( __t1, __t2, __t3)",
     "#define ALIAS_<%=cb.label%>_D_2(__t1, __t2, __t3) <%=cb.label%>.D_2( __t1, __t2, __t3)",
     "#define ALIAS_<%=cb.label%>_D_1(__t1, __t2, __t3) <%=cb.label%>.D_1( __t1, __t2, __t3)",
@@ -174,16 +211,16 @@ class COMMON_Build
   <% end %>
   ]
   DATA[:alias_names] = [\
-  <% for bc in ocp.control_bounds %>
-    "<%=bc.label%>_D_3",
-    "<%=bc.label%>_D_2",
-    "<%=bc.label%>_D_1",
-    "<%=bc.label%>_D_3_3",
-    "<%=bc.label%>_D_2_3",
-    "<%=bc.label%>_D_2_2",
-    "<%=bc.label%>_D_1_3",
-    "<%=bc.label%>_D_1_2",
-    "<%=bc.label%>_D_1_1",
+  <% for cb in list %>
+    "<%=cb.label%>_D_3",
+    "<%=cb.label%>_D_2",
+    "<%=cb.label%>_D_1",
+    "<%=cb.label%>_D_3_3",
+    "<%=cb.label%>_D_2_3",
+    "<%=cb.label%>_D_2_2",
+    "<%=cb.label%>_D_1_3",
+    "<%=cb.label%>_D_1_2",
+    "<%=cb.label%>_D_1_1",
   <% end %>
   ]
 

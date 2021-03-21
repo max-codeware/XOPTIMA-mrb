@@ -51,6 +51,9 @@ module XOPTIMA
     attr_reader :lagrange
     attr_reader :mayer
 
+    # Parameters: stuff that doesn't fit anywhere else
+    # Params: optimization parameters
+    # aux_params: model parameters
     attr_reader :parameters, :params, :aux_params
     attr_reader :num_threads
     attr_reader :max_iter
@@ -74,8 +77,11 @@ module XOPTIMA
     attr_reader :dH_dx
     attr_reader :dH_du
     attr_reader :dH_dp
+    attr_reader :dJ_dx, :dJ_dp, :dJ_du
+    attr_reader :m, :dm_du
     attr_reader :P
     attr_reader :g, :jump
+    attr_reader :dmayer_dx, :dmayer_dp
 
     attr_reader :sparse_mxs
     attr_reader :adjointBC
@@ -106,9 +112,9 @@ module XOPTIMA
       @omegas  = []
 
       # Parameters 
-      @parameters = []
-      @params     = []
-      @aux_params = []
+      @parameters = [] # Will contain all the non-specified parameters
+      @params     = [] # Pvars
+      @aux_params = {} # ?
 
       # Names
       @post_names     = []
@@ -179,7 +185,7 @@ module XOPTIMA
     #
     # Defaul constraint bounds are -1 and +1.
     def addControlBound(control, 
-                        controlType: "U_QUADRATIC", 
+                        controlType: "QUADRATIC", 
                         label:       nil, 
                         epsilon:     1e-3,
                         tolerance:   1e-3,
@@ -217,7 +223,15 @@ module XOPTIMA
     # 
     #  * pars: hash of parameters equal to initial value for class set up. Es. {h => 1, epsilon => 2}
     # 
-    def mapUserFunctionToRegularized(func_name, class, pars: {})
+    def mapUserFunctionToRegularized(func_name, klass, pars: {})
+      if f = RegularizedFunctions[klass]
+        pars = pars.empty? ? f[:parameters] : pars
+        uf_map = UserFunctionMap.new(func_name, klass, pars, f[:args])
+        warn "User function map already defined for symbol #{func_name}" if @user_map_functions.include? uf_map 
+        @user_map_functions << uf_map
+      else 
+        raise DescriprionError, "Unknown function class `#{klass}'"
+      end
     end
 
     # Bolza formulation defines both Mayer and Lagrange targets of the Optimal 
@@ -271,8 +285,10 @@ module XOPTIMA
                           clean:              true,
                           codegenOptions:     [])
       raise DescriprionError, "Dynamic system not loaded for problem #{@name}" unless @loaded
-
+      OCProblemChecker.check_state_guess(state_guess)
+      @aux_params  = parameters  # Add check
       @state_guess = state_guess
+      
       @states_i_f  = __states_i_f
       
       @mesh = mesh 
@@ -284,14 +300,22 @@ module XOPTIMA
 
       @nu    = __nu 
       @eta   = __eta 
+      @P     = __generate_penalty
+      @J     = @P
       @df_dx = __df_dx
       @df_du = __df_du
       @df_dp = __df_dp
       @dH_dx = __dH_dx
       @dH_du = __dH_du
       @dH_dp = __dH_dp
-      @P     = __generate_penalty
+      @dJ_dx = __dJ_dx
+      @dJ_du = __dJ_du
+      @dJ_dp = __dJ_dp
+      @m     = __m
+      @dm_du = __dm_du 
       @bc    = __bc
+      @dmayer_dx = __Dmayer_dx
+      @dmayer_dp = __Dmayer_dp
 
       @adjointBC = __adjointBC
       @g    = __g 
@@ -311,6 +335,10 @@ module XOPTIMA
           "dH/dx: #{@dH_dx}\n\n",
           "dH/du: #{@dH_du}\n\n",
           "dH/dp: #{@dH_dp}\n\n",
+          "dJ/dx: #{@dJ_dx}\n\n",
+          "dJ/du: #{@dJ_du}\n\n",
+          "dJ/dp: #{@dJ_dp}\n\n",
+          "m: #{@m}\n\n",
           "bc: #{@bc}\n\n",
           "adjointBC: #{@adjointBC}\n\n",
           "g: #{@g}\n\n",
@@ -375,6 +403,48 @@ module XOPTIMA
       end
     end
 
+    class UserFunctionMap
+      attr_reader :par_h, :klass, :namepars, :func, :args, :par_delta
+
+      # For ERB template only
+      alias :label :func
+      def initialize(name, klass, pars, args)
+        # DATA[:UserMapFunctions] = [
+        #  {
+        #    :par_h => "0.1",
+        #    :class => "ClipIntervalWithErf",
+        #    :namepars => [ "delta", "h" ],
+        #    :func => "clip",
+        #    :args => [ "x", "a", "b" ],
+        #    :par_delta => "0.1",
+        #  } 
+        @par_h     = pars[:h] || 0
+        @klass     = klass
+        @namepars  = pars.keys.map! &:to_s
+        @func      = name 
+        @args      = args
+        @par_delta = pars[:delta] || 0
+      end
+
+      def ==(other)
+        if other.is_a? UserFunctionMap
+          return self.func == other.func
+        end
+        false
+      end
+
+      def to_s
+        [
+          "func: #{@func}",
+          "  class: #{@klass}",
+          "  namepars: #{@namepars}",
+          "  args: #{@args}",
+          "  par_h: #{@par_h}",
+          "  par_delta: #{@par_delta}"
+        ].join "\n"
+      end
+    end
+
     def __display_bc(lst, type)
       lst.each_key do |v|
         puts "#{type}_#{v} : Enabled"
@@ -404,8 +474,9 @@ module XOPTIMA
         "=======================<Control Bound>======================="
       ].join "\n"
       @control_bounds.each { |cb| puts cb}
+      puts "====================<User Map Functions >===================="
+      @user_map_functions.each { |umf| puts umf}
     end
-
     
   end
 end

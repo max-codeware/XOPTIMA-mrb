@@ -52,7 +52,9 @@ problem.setTarget(mayer: -x[t_f])
 problem.generateOCProblem(
   clean: false,
   post_processing: [],
-  parameters: {},
+  parameters: {vFmax => 10, minClip => -1, maxClip => 1},
   mesh: { s0: 0, segments: [ {length: 0.1, n: 10}, {length: 0.4, n:40}, {length: 0.4, n: 40}, {length: 1, n: 10} ] },
   state_guess: {v => 1}
 )
+
+# Parametri => aggiunti a OCP.rb sotto ModelParameters

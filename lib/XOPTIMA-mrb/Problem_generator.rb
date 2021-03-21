@@ -128,7 +128,7 @@ module XOPTIMA
 
     ##
     # It calculates the jump vector as
-    # `[statej[left] - statoj[right], ... , lambdaj[left] - lambdaj[right], ...]`
+    # `[statej[left] - statej[right], ... , lambdaj[left] - lambdaj[right], ...]`
     def __jump
       jump = []
       states_n = @states.size
@@ -163,6 +163,30 @@ module XOPTIMA
       pc1 = states_i.each_with_index.map { |xj, i| (@B.diff(xj) + @eta[i]).subs(dict1)}
       pc2 = states_f.each_with_index.map { |xj, i| (@B.diff(xj) - @eta[i]).subs(dict2)}
       return pc1.concat pc2
+    end
+
+    def __m
+      return @J + @rhs.zip(@nu).inject(0) { |acc, i| acc + (i[0] - i[1]) ** 2}
+    end
+
+    def __dJ_dx
+      @states.map { |s| @J.diff(s) }
+    end
+
+    # It calculates the derivative of H w.r.t. the controls `u`.
+    # It returns a vector as an array
+    def __dJ_du
+      @controls.map { |c| @J.diff(c) }
+    end
+
+    # It calculates the derivative of H w.r.t. the parameters `p`.
+    # It returns a vector as an array
+    def __dJ_dp
+      @params.map { |p| @J.diff(p) }
+    end
+
+    def __dm_du    
+      @controls.map { |c| @m.diff(c) }
     end
     
     # It calculates the derivative of `H` w.r.t. the states `x`.
@@ -206,6 +230,14 @@ module XOPTIMA
     # w.r.t. the parameters.
     def __df_dp
       __jacobian(@rhs, @params)
+    end
+
+    def __Dmayer_dx
+      return @states_i_f.map { |x| @mayer.diff(x) }
+    end
+
+    def __Dmayer_dp
+      return @params.map { |p| @mayer.diff(p) }
     end
 
     ##
@@ -282,6 +314,10 @@ module XOPTIMA
       @omegas.each do |o|
         @parameters.delete o 
       end
+      @aux_params.each_key do |k|
+        @parameters.delete k
+      end
+
       @parameters.delete @independent
       @parameters.delete @left 
       @parameters.delete @right
@@ -348,7 +384,8 @@ module XOPTIMA
         __DetaDx,
         __DetaDp,
         __DnuDx,
-        __DnuDp
+        __DnuDp,
+        __DmDuu
       ]
     end
 
@@ -442,6 +479,10 @@ module XOPTIMA
 
     def __DnuDp
       return __jacobian(@nu, @params).to_sparse("DnuDp")
+    end
+
+    def __DmDuu
+      return __jacobian(@dm_du, @controls).to_sparse("DmDuu")
     end
 
 

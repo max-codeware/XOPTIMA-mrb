@@ -152,6 +152,11 @@ module XOPTIMA
         dict[n] = var :"V__[#{i}]"
       end
 
+      # ModelPars[]
+      @aux_params.each_with_index do |(p, _), i|
+        dict[p] = var :"ModelPars[#{i}]"
+      end
+
       return dict
     end
 

@@ -64,6 +64,8 @@ module XOPTIMA
       generate_jp
       generate_q_u
       generate_DuDxlp
+      generate_J
+      generate_m
     end
     
     ##
@@ -173,6 +175,7 @@ module XOPTIMA
         dict   = {@ocproblem.independent => var(:t1)}
         @ocproblem.state_guess.each do |s, g|
           index = states.index { |state| state.name == s }
+          #g = g.symdescfy # TO FIX
           io.puts "result__[#{index}] = #{g.subs(@dict).subs(dict)};"
         end
       end
@@ -210,6 +213,14 @@ module XOPTIMA
 
       __write_with_log("lagrange_target.c_code") do |io|
         io.puts "result__ = #{@ocproblem.lagrange.subs(@dict)};"
+      end
+
+      __write_with_log("DmayerDx.c_code") do |io|
+        __write_array(@ocproblem.dmayer_dx, io)
+      end
+
+      __write_with_log("DmayerDp.c_code") do |io|
+        __write_array(@ocproblem.dmayer_dp, io)
       end
     end
 
@@ -285,7 +296,31 @@ module XOPTIMA
     # It generates the `DuDxlp` file
     def generate_DuDxlp
       __write_with_log("DuDxlp.c_code") do |io|
-        io.puts "LW_ERROR0(\"DuDxlp not defined\");"
+        io.puts "UTILS_ERROR0(\"DuDxlp not defined\");"
+      end
+    end
+
+    def generate_J
+      __write_with_log("DJDx.c_code") do |io|
+        __write_array(@ocproblem.dJ_dx, io)
+      end
+      
+      __write_with_log("DJDp.c_code") do |io|
+        __write_array(@ocproblem.dJ_dp, io)
+      end
+
+      __write_with_log("DJDu.c_code") do |io|
+        __write_array(@ocproblem.dJ_du, io)
+      end
+    end
+
+    def generate_m
+      __write_with_log("m_fun.c_code") do |io|
+        io.puts "result__ = #{@ocproblem.m.subs(@dict)};"
+      end
+
+      __write_with_log("DmDu.c_code") do |io|
+        __write_array(@ocproblem.dm_du, io)
       end
     end
 

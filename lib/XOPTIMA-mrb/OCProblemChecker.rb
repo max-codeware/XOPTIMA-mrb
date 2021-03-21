@@ -197,6 +197,20 @@ module XOPTIMA
         end
       end
 
+      ##
+      # This check is performed in `Problem#generateOCProblem` to check the
+      # parameter `state_guess` is a hash with symbolic variables as keys and
+      # numbers or symbolic expressions as values.
+      def check_state_guess(state_guess)
+        assert(state_guess, Hash, :state_guess, :generateOCProblem, strict: true)
+        state_guess.each do |key, value|
+          if key.class != SymDesc::Variable || !(value.is_symbolic? || value.is_a?(Numeric) || !value.respond_to?(:to_symdesc))
+            raise TypeError, "Hash of parameter `#{param}' is not in the format {Variable => (Symbolic | Numeric)}"
+          end
+          state_guess[key] = value.symdescfy
+        end
+      end
+
       # It attempts to convert object `v` provided
       # in function parameter `param` of method `m`
       # to a symbolic one. If the conversion fails,
