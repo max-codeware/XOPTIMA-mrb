@@ -1,0 +1,209 @@
+---
+Power1Regular:
+  :args:
+  - x
+  :parameters:
+    h: 0.1
+    epsilon: 0.01
+Power2Regular:
+  :args:
+  - x
+  :parameters:
+    h: 0.1
+    epsilon: 0.01
+Power4Regular:
+  :args:
+  - x
+  :parameters:
+    h: 0.1
+    epsilon: 0.01
+DiffModuleN:
+  :args:
+  - x
+  :parameters:
+    N: 1
+PosRegularized:
+  :args:
+  - x
+  :parameters:
+    h: 0.1
+    epsilon: 0.01
+SignRegularizedWithErf:
+  :args:
+  - x
+  :parameters:
+    h: 0.1
+    epsilon: 0.01
+SignRegularizedWithErf0:
+  :args:
+  - x
+  :parameters:
+    h: 0.1
+    epsilon: 0.01
+SignRegularizedWithSinAtan:
+  :args:
+  - x
+  :parameters:
+    h: 0.1
+    epsilon: 0.01
+SignRegularizedWithSinAtan0:
+  :args:
+  - x
+  :parameters:
+    h: 0.1
+    epsilon: 0.01
+SignRegularizedWithTanh:
+  :args:
+  - x
+  :parameters:
+    h: 0.1
+    epsilon: 0.01
+PositivePartRegularizedWithErf:
+  :args:
+  - x
+  :parameters:
+    h: 0.1
+PositivePartRegularizedWithSinAtan:
+  :args:
+  - x
+  :parameters:
+    h: 0.1
+PositivePartRegularizedWithPolynomial:
+  :args:
+  - x
+  :parameters:
+    h: 0.1
+NegativePartRegularizedWithErf:
+  :args:
+  - x
+  :parameters:
+    h: 0.1
+NegativePartRegularizedWithSinAtan:
+  :args:
+  - x
+  :parameters:
+    h: 0.1
+NegativePartRegularizedWithPolynomial:
+  :args:
+  - x
+  :parameters:
+    h: 0.1
+AbsoluteValueRegularizedWithErf:
+  :args:
+  - x
+  :parameters:
+    h: 0.1
+AbsoluteValueRegularizedWithPolynomial:
+  :args:
+  - x
+  :parameters:
+    h: 0.1
+AbsoluteValueRegularizedWithSinAtan:
+  :args:
+  - x
+  :parameters:
+    h: 0.1
+WallRegular:
+  :args:
+  - x
+  :parameters:
+    h: 0.1
+    epsilon: 0.01
+WallSmooth:
+  :args:
+  - x
+  :parameters:
+    h: 0.1
+    epsilon: 0.01
+WallPiecewise:
+  :args:
+  - x
+  :parameters:
+    h: 0.1
+ClipIntervalWithErf:
+  :args:
+  - x
+  - a
+  - b
+  :parameters:
+    h: 0.1
+    delta: 0
+ClipIntervalWithSinAtan:
+  :args:
+  - x
+  - a
+  - b
+  :parameters:
+    h: 0.1
+    delta: 0
+ClipIntervalWithPolynomial:
+  :args:
+  - x
+  - a
+  - b
+  :parameters:
+    h: 0.1
+    delta: 0
+ClipRectangle:
+  :args:
+  - x
+  - a
+  - b
+  :parameters:
+    h: 0.1
+    delta: 0
+ClipSuperior:
+  :args:
+  - x
+  - y
+  :parameters:
+    h: 0.01
+ClipInferior:
+  :args:
+  - x
+  - y
+  :parameters:
+    h: 0.01
+ClipReciprocal:
+  :args:
+  - x
+  - a
+  :parameters:
+    epsilon: 0.01
+MaxValueRegularizedWithSinAtan:
+  :args:
+  - x
+  - y
+  :parameters:
+    h: 0.1
+MaxValueRegularizedWithPolynomial:
+  :args:
+  - x
+  - y
+  :parameters:
+    h: 0.1
+MinValueRegularizedWithSinAtan:
+  :args:
+  - x
+  - y
+  :parameters:
+    h: 0.1
+MinValueRegularizedWithPolynomial:
+  :args:
+  - x
+  - y
+  :parameters:
+    h: 0.1
+Hypot:
+  :args:
+  - x
+  - y
+  :parameters:
+    epsilon: 0.01
+Hypot3:
+  :args:
+  - x
+  - y
+  - z
+  :parameters:
+    epsilon: 0.01
