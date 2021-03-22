@@ -29,14 +29,16 @@ module XOPTIMA
 
 	[
 		"./XOPTIMA-mrb/version.rb",
+		"./XOPTIMA-mrb/Problem",
 		"./XOPTIMA-mrb/ProblemHelper.rb",
-		"./XOPTIMA-mrb/Problem.rb",
+		"./XOPTIMA-mrb/OCProblem.rb",
+		"./XOPTIMA-mrb/ProblemRules.rb",
 		"./XOPTIMA-mrb/Matrix.rb",
 		"./XOPTIMA-mrb/Check.rb",
 		"./XOPTIMA-mrb/OCProblemChecker.rb",
-		"./XOPTIMA-mrb/Problem_generator.rb",
 		"./XOPTIMA-mrb/Generator/GeneratorHelper.rb",
 		"./XOPTIMA-mrb/Generator/FileGenerator.rb",
+		"./XOPTIMA-mrb/Generator/FileDefinition.rb",
 		"./XOPTIMA-mrb/Templates/OCP.erb.rb",
 		"./XOPTIMA-mrb/Templates/UserFunctionsCI.erb.rb",
 		"./XOPTIMA-mrb/Overload/SymDesc.rb",
