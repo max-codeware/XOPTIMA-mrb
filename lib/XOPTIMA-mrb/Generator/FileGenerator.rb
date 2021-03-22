@@ -23,51 +23,66 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-if ENGINE.ruby?
-  require "erb"
-end
-
 module XOPTIMA
-  
-  ##
-  # This class handles the problem description
-  # and generates the temporary code files.
-  # This class shall not be used by the final user.
+
+  if ENGINE.ruby?
+    require "erb"
+  end
+
   class FileGenerator
 
     include GeneratorHelper
+    @@wrules = {}
 
-  	# It initializes the instance saving the `ocproblem`
+    class Wrule
+      attr_reader :mode, :rule
+      def initialize(mode, rule)
+        @mode = mode
+        @rule = rule
+      end
+    end
+
+    def self.define_file(filename, mode: :custom, **opt, &rule)
+      raise ArgumentError, 
+          "Unrecognised writing mode #{mode} (accepted: :vec, :matrix, :custom)" unless [:vec, :matrix, :custom].include? mode
+      warn "Overwriting rule for file '#{filename}´" if @@wrules.has_key?(filename)
+      if mode != :custom
+        if !opt.has_key? :variable
+          raise ArgumentError, "Missing variable option for file rule '#{filename}`"
+        end
+        rule = opt[:variable]
+      end
+      @@wrules[filename] = Wrule.new(mode, rule)
+    end
+
+    # It initializes the instance saving the `ocproblem`
     # description passes as argument.
     # It also creates a directory named `OCP_tmp` where all
     # the generated files are placed.
     def initialize(ocproblem)
-  		@ocproblem = ocproblem
+      @ocproblem = ocproblem
       Dir.mkdir("OCP_tmp") unless Dir.exist? "OCP_tmp"
-  	end
+    end
 
-    # Generic method that calls all the subroutines for the full
-    # generation of the problem files
     def render_files
       @dict = @ocproblem.substitution_dict
       generate_ocp_rb
       generate_sparse_mx_files
-      generate_precalculated
-      generate_rhs_ode
-      generate_checks
-      generate_guess
-      generate_H_files
-      generate_targets
-      generate_bc
-      generate_adjointBC
-      generate_post
-      generate_jp
-      generate_q_u
-      generate_DuDxlp
-      generate_J
-      generate_m
+
+      @@wrules.each do |file, wrule|
+        __write_with_log("#{file}.c_code") do |io|
+          case wrule.mode
+          when :custom
+            instance_exec(io, &wrule.rule)
+          when :vec
+            __write_array(@ocproblem.instance_variable_get(:"@#{wrule.rule}"), io)
+          when :matrix
+            warn "Unhandled matrix writing for #{file}"
+          end
+        end
+      end
     end
-    
+
     ##
     # It renders and generates the file `OCP.rb`
     def generate_ocp_rb
@@ -94,237 +109,8 @@ module XOPTIMA
         __write_matrix("#{mx.label}.c_code", mx, @dict)
       end
     end
-    
-    # it Generates the files for the expressions generated
-    # in OCProblem. In particular:
-    #   * eta
-    #   * g
-    #   + jump
-    #   * nu
-    #   * H
-    def generate_precalculated
-      __write_with_log("eta.c_code") do |io| 
-        __write_array(@ocproblem.eta, io)
-      end
 
-      __write_with_log("g.c_code") do |io| 
-        __write_array(@ocproblem.g, io)
-      end
-
-      __write_with_log("jump.c_code") do |io|
-        __write_array(@ocproblem.jump, io)
-      end 
-
-      __write_with_log("nu.c_code") do |io|
-        __write_array(@ocproblem.nu, io)
-      end
-
-      __write_with_log("H_fun.c_code") do |io|
-        io.puts "result__ = #{@ocproblem.H.subs(@dict)};"
-      end
-    end
-
-    ##
-    # It generates the file for the right-hand side of the ODE
-    def generate_rhs_ode
-      __write_with_log("rhs_ode.c_code") do |io|
-        __write_array(@ocproblem.rhs, io)
-      end
-    end
-
-    ##
-    # It generates the files for checks
-    def generate_checks
-      __write_with_log("cell_check.c_code") do |io|
-      end
-
-      __write_with_log("node_check.c_code") do |io|
-      end
-
-      __write_with_log("pars_check.c_code") do |io|
-      end
-
-      __write_with_log("u_check.c_code") do |io|
-        @ocproblem.control_bounds.each_with_index do |cb,i|
-          cb_x = @dict[cb.control[@ocproblem.independent]]
-          Check.not_nil(cb_x)
-          io.puts "dummy_#{i + 1} = #{cb.label}___dot___check_range(#{cb_x}, #{cb.min.subs(@dict)}, #{cb.max.subs(@dict)});" 
-        end
-      end
-    end
-
-    ##
-    # It generates the files for guesses
-    def generate_guess
-      __write_with_log("l_guess.c_code") do |io|
-      end
-
-      __write_with_log("u_guess.c_code") do |io|
-        # TODO: temporary workaround. Needs to be implemented
-        io.puts "result[0] = 0;"
-      end
-
-      # This file is generated renaming the independent variable as `t1`
-      # and assigning to it the value of `Q__[0]`.
-      # Then, it is substituted into the expression after the
-      # dictionary for code generation (we want to subs only the remaining
-      # independent variable stated as free one)
-      __write_with_log("x_guess.c_code") do |io|
-        io.puts "t1 = Q__[0];"
-        states = @ocproblem.states
-        dict   = {@ocproblem.independent => var(:t1)}
-        @ocproblem.state_guess.each do |s, g|
-          index = states.index { |state| state.name == s }
-          #g = g.symdescfy # TO FIX
-          io.puts "result__[#{index}] = #{g.subs(@dict).subs(dict)};"
-        end
-      end
-
-      __write_with_log("p_guess.c_code") do |io|
-      end
-    end
-
-    ##
-    # It generates three files coding:
-    #   * dH/dp
-    #   * dh/du
-    #   * dH/dx
-    def generate_H_files
-      __write_with_log("Hp.c_code") do |io|
-        __write_array(@ocproblem.dH_dp, io)
-      end
-
-      __write_with_log("Hu.c_code") do |io|
-        __write_array(@ocproblem.dH_du, io)
-      end
-
-      __write_with_log("Hx.c_code") do |io|
-        __write_array(@ocproblem.dH_dx, io)
-      end
-    end
-
-    ##
-    # It generates the files for the lagrange and
-    # mayer targets
-    def generate_targets
-      __write_with_log("mayer_target.c_code") do |io|
-        io.puts "result__ = #{@ocproblem.mayer.subs(@dict)};"
-      end
-
-      __write_with_log("lagrange_target.c_code") do |io|
-        io.puts "result__ = #{@ocproblem.lagrange.subs(@dict)};"
-      end
-
-      __write_with_log("DmayerDx.c_code") do |io|
-        __write_array(@ocproblem.dmayer_dx, io)
-      end
-
-      __write_with_log("DmayerDp.c_code") do |io|
-        __write_array(@ocproblem.dmayer_dp, io)
-      end
-    end
-
-    ##
-    # It generates the `bc` file where the
-    # boundary conditions are coded
-    def generate_bc
-      __write_with_log("bc.c_code") do |io|
-        i = -1
-        @ocproblem.final.each do |k, v|
-          exp = k[@ocproblem.right] - v 
-          io.puts "result__[#{i += 1}] = #{exp.subs(@dict)};"
-        end
-        
-        @ocproblem.initial.each do |k, v|
-          exp = k[@ocproblem.left] - v 
-          io.puts "result__[#{i += 1}] = #{exp.subs(@dict)};"
-        end
-        # @ocproblem.cyclic.each
-        # @ocproblem.generic.each
-      end
-    end
-
-    ##
-    # It generates the `adjointBC` file
-    def generate_adjointBC
-      __write_with_log("adjointBC.c_code") do |io|
-        __write_array(@ocproblem.adjointBC, io)
-      end
-    end
-
-    ##
-    # It generates the `post` and integrated_post`
-    # files
-    def generate_post
-      __write_with_log("post.c_code") do |io|
-      end
-
-      __write_with_log("integrated_post.c_code") do |io|
-      end
-    end
-
-    ##
-    # It generates the `Jp_controls` and `Jp_fun`
-    # files
-    def generate_jp
-      __write_with_log("Jp_controls.c_code") do |io|
-        io.puts "result__ = #{@ocproblem.P.subs(@dict)};"
-      end
-
-      __write_with_log("Jp_fun.c_code") do |io|
-        # TODO: this part must be implemented
-        io.puts "result__ = 0;"
-      end
-    end
-
-    ##
-    # It generates the `q` and `u` file
-    def generate_q_u
-      __write_with_log("q.c_code") do |io|
-        io.puts "result__[0] = s;"
-      end
-
-      __write_with_log("u.c_code") do |io|
-        io.puts "// Solver not implemented in Ruby"
-        @ocproblem.controls.each_with_index do |c, i|
-          io.puts "result__[#{i}] = 0;"
-        end
-      end
-    end
-
-    ##
-    # It generates the `DuDxlp` file
-    def generate_DuDxlp
-      __write_with_log("DuDxlp.c_code") do |io|
-        io.puts "UTILS_ERROR0(\"DuDxlp not defined\");"
-      end
-    end
-
-    def generate_J
-      __write_with_log("DJDx.c_code") do |io|
-        __write_array(@ocproblem.dJ_dx, io)
-      end
-      
-      __write_with_log("DJDp.c_code") do |io|
-        __write_array(@ocproblem.dJ_dp, io)
-      end
-
-      __write_with_log("DJDu.c_code") do |io|
-        __write_array(@ocproblem.dJ_du, io)
-      end
-    end
-
-    def generate_m
-      __write_with_log("m_fun.c_code") do |io|
-        io.puts "result__ = #{@ocproblem.m.subs(@dict)};"
-      end
-
-      __write_with_log("DmDu.c_code") do |io|
-        __write_array(@ocproblem.dm_du, io)
-      end
-    end
-
-  private 
+  private
 
     ##
     # It writes a vector saved as an array as 
@@ -365,5 +151,15 @@ module XOPTIMA
       yield
       puts "done!" if @ocproblem.verbose
     end
+
+
   end
+
 end
+
+
+
+
+
+
+
